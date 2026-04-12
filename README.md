@@ -44,6 +44,10 @@ Além de ser um projeto tecnológico, o **MeAudota** também busca gerar impacto
   - localização;
   - descrição;
   - fotos;
+  - status do pet:
+    - disponível;
+    - em processo de adoção;
+    - adotado;
 - Contato com o responsável pela adoção.
 
 ### Funcionalidades futuras
@@ -52,10 +56,6 @@ Além de ser um projeto tecnológico, o **MeAudota** também busca gerar impacto
 - Busca e filtros avançados;
 - Favoritos;
 - Formulário de intenção de adoção;
-- Status do pet:
-  - disponível;
-  - em processo de adoção;
-  - adotado;
 - Integração com mapas para localização.
 
 ---
