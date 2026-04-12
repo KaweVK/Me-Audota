@@ -25,7 +25,7 @@ public class Pet {
     @Id
     @Column(name = "id", updatable = false, nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private BigInteger id;
+    private Long id;
     @ElementCollection
     @CollectionTable(
             name = "pet_imagens",
@@ -38,9 +38,9 @@ public class Pet {
     @Column(name = "descricao", nullable = false)
     private String descricao;
     @Column(name = "idade_mes", nullable = false)
-    private BigInteger idadeMes;
+    private Integer idadeMes;
     @Column(name = "idade_ano", nullable = false)
-    private BigInteger idadeAno;
+    private Integer idadeAno;
     @Enumerated(EnumType.STRING)
     @Column(name = "especie", length = 80, nullable = false)
     private Especie especie;

@@ -10,7 +10,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 public record PetDTO(
-        BigInteger id,
+        Long id,
         @NotNull
         @Size(min = 1, max = 100)
         @NotBlank
@@ -19,9 +19,9 @@ public record PetDTO(
         @Size(max = 200)
         String descricao,
         @NotNull
-        BigInteger idadeMes,
+        Integer idadeMes,
         @NotNull
-        BigInteger idadeAno,
+        Integer idadeAno,
         @NotNull
         Especie especie,
         @NotNull

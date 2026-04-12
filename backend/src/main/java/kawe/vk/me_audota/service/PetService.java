@@ -19,7 +19,7 @@ public class PetService {
     private final PetRepository petRepository;
     private final PetMapper petMapper;
 
-    public Optional<PetDTO> findById(Integer id) {
+    public Optional<PetDTO> findById(Long id) {
         var pet = petRepository.findById(id);
         if (pet.isPresent()) {
             return pet.map(petMapper::toDTO);
@@ -41,7 +41,7 @@ public class PetService {
         return Optional.of(petRepository.save(pet));
     }
 
-    public Optional<PetDTO> update(Integer id, PetDTO petDTO) {
+    public Optional<PetDTO> update(Long id, PetDTO petDTO) {
         var pet = petRepository.findById(id);
         if (pet.isPresent()) {
             Pet petToUpdate = pet.get();
@@ -63,7 +63,7 @@ public class PetService {
         }
     }
 
-    public void delete(Integer id) {
+    public void delete(Long id) {
         var pet = petRepository.findById(id);
         if (pet.isPresent()) {
             petRepository.delete(pet.get());
