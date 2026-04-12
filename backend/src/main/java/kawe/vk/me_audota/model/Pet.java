@@ -26,7 +26,12 @@ public class Pet {
     @Column(name = "id", updatable = false, nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private BigInteger id;
-    @Column(name = "imagens_urls", nullable = false)
+    @ElementCollection
+    @CollectionTable(
+            name = "pet_imagens",
+            joinColumns = @JoinColumn(name = "pet_id")
+    )
+    @Column(name = "imagem_url", nullable = false)
     private List<String> imagens;
     @Column(name = "nome", nullable = false, length = 150)
     private String nome;

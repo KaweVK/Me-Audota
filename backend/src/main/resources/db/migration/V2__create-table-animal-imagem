@@ -1,7 +1,0 @@
-CREATE TABLE animal_imagens (
-    id BIGSERIAL PRIMARY KEY,
-    animal_id BIGINT NOT NULL,
-    imagem_url TEXT NOT NULL,
-    CONSTRAINT fk_animal_imagens_animal
-        FOREIGN KEY (animal_id) REFERENCES animal(id) ON DELETE CASCADE
-);

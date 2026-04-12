@@ -1,4 +1,4 @@
-CREATE TABLE animal (
+CREATE TABLE pet (
     id BIGSERIAL PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     descricao TEXT NOT NULL,
