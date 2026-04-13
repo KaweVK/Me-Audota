@@ -1,6 +1,7 @@
 package kawe.vk.me_audota.service;
 
-import kawe.vk.me_audota.dto.PetDTO;
+import kawe.vk.me_audota.dto.ResponsePetDTO;
+import kawe.vk.me_audota.dto.RegisterPetDTO;
 import kawe.vk.me_audota.mapper.PetMapper;
 import kawe.vk.me_audota.model.Pet;
 import kawe.vk.me_audota.repository.PetRepository;
@@ -17,47 +18,48 @@ import java.util.Optional;
 public class PetService {
 
     private final PetRepository petRepository;
+    private final PetImagemService petImagemService;
     private final PetMapper petMapper;
 
-    public Optional<PetDTO> findById(Long id) {
+    public Optional<ResponsePetDTO> findById(Long id) {
         var pet = petRepository.findById(id);
         if (pet.isPresent()) {
-            return pet.map(petMapper::toDTO);
+            return pet.map(petMapper::toResponseDTO);
         } else {
             throw new IllegalArgumentException("Pet com ID " + id + " não existe");
         }
     }
 
-    public Page<PetDTO> findAll(Integer page, Integer size) {
+    public Page<ResponsePetDTO> findAll(Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Pet> result = petRepository.findAll(pageable);
-        return result.map(petMapper::toDTO);
+        return result.map(petMapper::toResponseDTO);
     }
 
-    public Optional<Pet> create(PetDTO petDTO) {
-        var pet = petMapper.toEntity(petDTO);
-        //adicionar if para verificar imagem
+    public Optional<Pet> create(RegisterPetDTO registerPetDTO) {
+        var pet = petMapper.toEntity(registerPetDTO);
+        pet.setImagens(petImagemService.uploadImagens(registerPetDTO.imagens()));
         //adicionar validate
         return Optional.of(petRepository.save(pet));
     }
 
-    public Optional<PetDTO> update(Long id, PetDTO petDTO) {
+    public Optional<ResponsePetDTO> update(Long id, RegisterPetDTO registerPetDTO) {
         var pet = petRepository.findById(id);
         if (pet.isPresent()) {
             Pet petToUpdate = pet.get();
-            petToUpdate.setNome(petDTO.nome());
-            petToUpdate.setDescricao(petDTO.descricao());
-            petToUpdate.setIdadeMes(petDTO.idadeMes());
-            petToUpdate.setIdadeAno(petDTO.idadeAno());
-            petToUpdate.setEspecie(petDTO.especie());
-            petToUpdate.setCor(petDTO.cor());
-            petToUpdate.setSexo(petDTO.sexo());
-            petToUpdate.setStatus(petDTO.status());
+            petToUpdate.setNome(registerPetDTO.nome());
+            petToUpdate.setDescricao(registerPetDTO.descricao());
+            petToUpdate.setIdadeMes(registerPetDTO.idadeMes());
+            petToUpdate.setIdadeAno(registerPetDTO.idadeAno());
+            petToUpdate.setEspecie(registerPetDTO.especie());
+            petToUpdate.setCor(registerPetDTO.cor());
+            petToUpdate.setSexo(registerPetDTO.sexo());
+            petToUpdate.setStatus(registerPetDTO.status());
+            petToUpdate.setImagens(petImagemService.uploadImagens(registerPetDTO.imagens()));
 
-            //adicionar if para verificar imagem
             //adicionar validatepo
             Pet petUpdated = petRepository.save(petToUpdate);
-            return Optional.of(petMapper.toDTO(petUpdated));
+            return Optional.of(petMapper.toResponseDTO(petUpdated));
         } else {
             throw new IllegalArgumentException("Pet com ID " + id + " não existe");
         }
@@ -71,5 +73,4 @@ public class PetService {
             throw new IllegalArgumentException("Pet com ID " + id + " não existe");
         }
     }
-
 }

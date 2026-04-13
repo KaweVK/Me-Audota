@@ -1,9 +1,11 @@
 package kawe.vk.me_audota.controller;
 
-import kawe.vk.me_audota.dto.PetDTO;
+import kawe.vk.me_audota.dto.RegisterPetDTO;
+import kawe.vk.me_audota.dto.ResponsePetDTO;
 import kawe.vk.me_audota.service.PetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,25 +28,37 @@ public class PetController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<Page<PetDTO>> findAll(
+    public ResponseEntity<Page<ResponsePetDTO>> findAll(
             @RequestParam(value = "page", defaultValue = "0")
             Integer page,
             @RequestParam(value = "size", defaultValue = "10")
             Integer size
     ) {
-        Page<PetDTO> pets = petService.findAll(page, size);
+        Page<ResponsePetDTO> pets = petService.findAll(page, size);
         return ResponseEntity.ok(pets);
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Object> create(@RequestBody PetDTO petDTO) {
-        var pet = petService.create(petDTO);
+    @PostMapping(
+            value = "/",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    public ResponseEntity<Object> create(@ModelAttribute RegisterPetDTO registerPetDTO) {
+        var pet = petService.create(registerPetDTO);
         return ResponseEntity.ok().body(pet);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable Long id, @RequestBody PetDTO petDTO) {
-        var pet = petService.update(id, petDTO);
+    @PutMapping(
+            value = "/{id}",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
+    )
+    public ResponseEntity<Object> update(@PathVariable Long id, @ModelAttribute RegisterPetDTO registerPetDTO) {
+        var pet = petService.update(id, registerPetDTO);
         return ResponseEntity.ok().body(pet);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> delete(@PathVariable Long id) {
+        petService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
