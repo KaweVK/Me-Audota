@@ -11,6 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -55,9 +58,14 @@ public class PetService {
             petToUpdate.setCor(registerPetDTO.cor());
             petToUpdate.setSexo(registerPetDTO.sexo());
             petToUpdate.setStatus(registerPetDTO.status());
-            petToUpdate.setImagens(petImagemService.uploadImagens(registerPetDTO.imagens()));
 
-            //adicionar validatepo
+            List<String> imagensMantidas = resolveImagensMantidas(petToUpdate.getImagens(), registerPetDTO.imagensMantidas());
+            List<String> novasImagens = petImagemService.uploadImagens(registerPetDTO.imagens());
+
+            List<String> imagensAtualizadas = new ArrayList<>(imagensMantidas);
+            imagensAtualizadas.addAll(novasImagens);
+            petToUpdate.setImagens(imagensAtualizadas);
+
             Pet petUpdated = petRepository.save(petToUpdate);
             return Optional.of(petMapper.toResponseDTO(petUpdated));
         } else {
@@ -72,5 +80,19 @@ public class PetService {
         } else {
             throw new IllegalArgumentException("Pet com ID " + id + " não existe");
         }
+    }
+
+    private List<String> resolveImagensMantidas(List<String> imagensAtuais, List<String> imagensMantidas) {
+        List<String> imagensSeguras = imagensAtuais == null
+                ? Collections.emptyList()
+                : imagensAtuais;
+
+        if (imagensMantidas == null || imagensMantidas.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return imagensMantidas.stream()
+                .filter(imagensSeguras::contains)
+                .toList();
     }
 }

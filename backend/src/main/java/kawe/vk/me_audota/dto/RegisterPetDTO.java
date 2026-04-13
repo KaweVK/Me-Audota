@@ -16,6 +16,7 @@ public record RegisterPetDTO(
         @NotBlank
         String nome,
         List<MultipartFile> imagens,
+        List<String> imagensMantidas,
         @Size(max = 200)
         String descricao,
         @NotNull

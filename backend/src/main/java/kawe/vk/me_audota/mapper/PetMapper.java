@@ -16,5 +16,6 @@ public interface PetMapper {
      ResponsePetDTO toResponseDTO(Pet pet);
 
      @Mapping(target = "imagens", ignore = true)
+     @Mapping(target = "imagensMantidas", ignore = true)
      RegisterPetDTO toRegisterDTO(Pet pet);
 }
