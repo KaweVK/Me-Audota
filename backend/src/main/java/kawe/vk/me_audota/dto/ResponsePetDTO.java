@@ -6,10 +6,9 @@ import jakarta.validation.constraints.Size;
 import kawe.vk.me_audota.model.enums.Especie;
 import kawe.vk.me_audota.model.enums.StatusPet;
 
-import java.math.BigInteger;
 import java.util.List;
 
-public record PetDTO(
+public record ResponsePetDTO(
         Long id,
         @NotNull
         @Size(min = 1, max = 100)
