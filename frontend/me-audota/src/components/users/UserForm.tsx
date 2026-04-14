@@ -53,7 +53,7 @@ export const UserForm = ({
 
   const validate = () => {
     if (formValues.nome.trim().length === 0) {
-      return 'Informe o nome do usuario.'
+      return 'Informe o nome do usuário.'
     }
 
     if (formValues.email.trim().length === 0) {
@@ -95,7 +95,7 @@ export const UserForm = ({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--brand-text-muted)]">
-            Usuarios
+            Usuários
           </p>
           <h1 className="mt-2 text-4xl text-[var(--brand-title)]">{title}</h1>
         </div>
@@ -184,9 +184,6 @@ export const UserForm = ({
             >
               {isSubmitting ? 'Salvando...' : submitLabel}
             </button>
-            <p className="text-sm text-[var(--brand-text-soft)]">
-              O back-end exige os campos completos no envio do formulario.
-            </p>
           </div>
         </form>
       </article>

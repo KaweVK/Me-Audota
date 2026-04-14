@@ -37,7 +37,7 @@ export const RegisterPage = () => {
       setError(
         err instanceof Error
           ? err.message
-          : 'Nao foi possivel criar a conta agora.',
+          : 'Não foi possível criar a conta agora.',
       )
     } finally {
       setIsSubmitting(false)
@@ -46,11 +46,11 @@ export const RegisterPage = () => {
 
   return (
     <AuthCard
-      title="Criar conta no sistema"
-      intro="O cadastro de usuario continua publico no back-end. Depois de salvar, o front faz login automatico e entra na area protegida."
+      title="Criar conta no MeAudota"
+      intro="O seu novo melhor amigo está a apenas alguns cliques de distância!"
       alternateAction={
         <p>
-          Ja tem conta?{' '}
+          Já tem conta?{' '}
           <Link
             to="/login"
             className="font-semibold text-[var(--brand-highlight)]"
@@ -65,10 +65,10 @@ export const RegisterPage = () => {
         backLabel="Voltar ao login"
         error={error}
         initialValues={initialValues}
-        intro="Preencha os dados do anunciante para criar uma conta nova. O proprio front ja autentica voce em seguida."
+        intro="Preencha os dados abaixo para criar uma conta nova."
         isSubmitting={isSubmitting}
         submitLabel="Criar conta"
-        title="Novo usuario"
+        title="Novo usuário"
         onSubmit={handleSubmit}
       />
     </AuthCard>

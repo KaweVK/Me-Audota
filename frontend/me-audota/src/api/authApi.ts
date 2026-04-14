@@ -9,7 +9,7 @@ export const loginRequest = async (payload: LoginPayload) => {
   })
 
   if (!response || typeof response.token !== 'string') {
-    throw new Error('Nao foi possivel iniciar a sessao.')
+    throw new Error('Não foi possível iniciar a sessão.')
   }
 
   return response.token

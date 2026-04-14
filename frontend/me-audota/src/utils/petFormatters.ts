@@ -6,7 +6,7 @@ const specieLabelMap: Record<string, string> = {
 }
 
 const statusLabelMap: Record<string, string> = {
-  DISPONIVEL: 'Disponivel',
+  DISPONIVEL: 'Disponível',
   PROCESSO_DE_ADOCAO: 'Em processo',
   ADOTADO: 'Adotado',
 }
@@ -24,7 +24,7 @@ export const formatStatus = (status: string): string =>
 
 export const formatSexo = (sexo: string | undefined): string => {
   if (!sexo) {
-    return 'Nao informado'
+    return 'Não informado'
   }
 
   return sexLabelMap[sexo.toUpperCase()] ?? sexo
@@ -34,17 +34,17 @@ export const formatAge = (anos: number, meses: number): string => {
   const yearPart =
     anos > 0 ? `${anos} ${anos > 1 ? 'anos' : 'ano'}` : undefined
   const monthPart =
-    meses > 0 ? `${meses} ${meses > 1 ? 'meses' : 'mes'}` : undefined
+    meses > 0 ? `${meses} ${meses > 1 ? 'meses' : 'mês'}` : undefined
 
   if (!yearPart && !monthPart) {
-    return 'Idade nao informada'
+    return 'Idade não informada'
   }
 
   if (yearPart && monthPart) {
     return `${yearPart} e ${monthPart}`
   }
 
-  return yearPart ?? monthPart ?? 'Idade nao informada'
+  return yearPart ?? monthPart ?? 'Idade não informada'
 }
 
 export const getMainImage = (pet: Pick<Pet, 'imagens'>): string =>

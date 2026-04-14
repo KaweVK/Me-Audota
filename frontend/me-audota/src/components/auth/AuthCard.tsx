@@ -24,9 +24,6 @@ export const AuthCard = ({
               className="h-14 w-14 rounded-full border border-[var(--brand-line)] bg-white p-1.5"
             />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--brand-text-muted)]">
-                Plataforma privada
-              </p>
               <p className="text-2xl font-semibold text-[var(--brand-title)]">
                 MeAudota
               </p>
@@ -35,7 +32,7 @@ export const AuthCard = ({
 
           <div className="mt-10 max-w-xl">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--brand-highlight)]">
-              Gestao de pets e anunciantes
+              Veja e adote
             </p>
             <h1 className="mt-4 text-4xl leading-tight text-[var(--brand-title)] md:text-5xl">
               {title}
@@ -48,26 +45,26 @@ export const AuthCard = ({
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             <div className="rounded-[1.5rem] border border-[var(--brand-line)] bg-white/70 p-4">
               <p className="text-sm font-semibold text-[var(--brand-title)]">
-                Sessao segura
+                Anuncie
               </p>
               <p className="mt-2 text-sm text-[var(--brand-text-soft)]">
-                O acesso acompanha o JWT emitido pelo back-end.
+                Viu algum pet precisando de um lar? Anuncie aqui.
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-[var(--brand-line)] bg-white/70 p-4">
               <p className="text-sm font-semibold text-[var(--brand-title)]">
-                Controle de ownership
+                Adote
               </p>
               <p className="mt-2 text-sm text-[var(--brand-text-soft)]">
-                Edicao e remocao so aparecem para o proprio anunciante.
+                Encontre um novo amigo e dê um lar para ele.
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-[var(--brand-line)] bg-white/70 p-4">
               <p className="text-sm font-semibold text-[var(--brand-title)]">
-                Estrutura enxuta
+                Seja um parceiro
               </p>
               <p className="mt-2 text-sm text-[var(--brand-text-soft)]">
-                Front reorganizado para bater direto com os endpoints atuais.
+                Ajude a divulgar e aumentar o alcance das adoções.
               </p>
             </div>
           </div>

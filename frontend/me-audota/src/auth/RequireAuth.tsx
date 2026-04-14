@@ -13,7 +13,7 @@ export const RequireAuth = () => {
             MeAudota
           </p>
           <h1 className="mt-4 text-3xl text-[var(--brand-title)]">
-            Restaurando sessao
+            Restaurando sessão
           </h1>
           <p className="mt-3 text-sm text-[var(--brand-text-soft)]">
             Um instante enquanto carregamos os dados da conta.

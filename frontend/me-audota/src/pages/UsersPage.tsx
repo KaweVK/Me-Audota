@@ -23,7 +23,7 @@ export const UsersPage = () => {
         setError(
           err instanceof Error
             ? err.message
-            : 'Nao foi possivel carregar os usuarios.',
+            : 'Não foi possível carregar os usuários.',
         )
       } finally {
         setIsLoading(false)
@@ -54,16 +54,15 @@ export const UsersPage = () => {
           Comunidade
         </p>
         <h1 className="mt-2 text-4xl text-[var(--brand-title)]">
-          Usuarios cadastrados
+          Usuários cadastrados
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--brand-text-soft)]">
-          Esta tela cobre o CRUD de usuarios do back-end novo, com busca local
-          e acesso aos perfis detalhados de cada anunciante.
+          Confira os perfis detalhados de cada anunciante.
         </p>
 
         <label className="mt-6 flex max-w-xl flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
-            Buscar usuario
+            Buscar usuário
           </span>
           <input
             type="search"
@@ -104,7 +103,7 @@ export const UsersPage = () => {
       {!isLoading && !error && users.length === 0 ? (
         <article className="rounded-[2rem] border border-[var(--brand-line)] bg-white p-8 text-center">
           <h2 className="text-3xl text-[var(--brand-title)]">
-            Nenhum usuario encontrado
+            Nenhum usuário encontrado
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--brand-text-soft)]">
             Cadastre um novo anunciante para iniciar a plataforma.

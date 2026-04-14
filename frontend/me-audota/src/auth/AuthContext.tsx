@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       setCurrentUser(usuario)
     } catch {
       logout()
-      throw new Error('Nao foi possivel restaurar sua sessao.')
+      throw new Error('Não foi possível restaurar sua sessão.')
     } finally {
       setIsLoading(false)
     }
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     const nextSession = decodeSessionSnapshot(token)
 
     if (!nextSession) {
-      throw new Error('Token de autenticacao invalido.')
+      throw new Error('Token de autenticação inválido.')
     }
 
     persistToken(token)

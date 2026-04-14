@@ -24,18 +24,18 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const defaultErrorMessage = (status: number) => {
   if (status === 401) {
-    return 'Sua sessao expirou. Entre novamente para continuar.'
+    return 'Sua sessão expirou. Entre novamente para continuar.'
   }
 
   if (status === 403) {
-    return 'Voce nao tem permissao para concluir esta acao.'
+    return 'Você não tem permissão para concluir esta ação.'
   }
 
   if (status === 404) {
-    return 'Recurso nao encontrado.'
+    return 'Recurso não encontrado.'
   }
 
-  return 'Nao foi possivel concluir a requisicao agora.'
+  return 'Não foi possível concluir a requisição agora.'
 }
 
 const extractErrorMessage = (raw: string, status: number) => {

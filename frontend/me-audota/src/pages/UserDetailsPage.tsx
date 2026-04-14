@@ -70,12 +70,12 @@ export const UserDetailsPage = () => {
 
   const handleDeleteUser = async () => {
     if (!user || !currentUser || currentUser.id !== user.id) {
-      setActionError('Voce so pode apagar a propria conta.')
+      setActionError('Você só pode apagar a própria conta.')
       return
     }
 
     const shouldDelete = window.confirm(
-      'Deseja apagar sua conta? Os pets vinculados a ela tambem podem ser removidos.',
+      'Deseja apagar sua conta? Os pets vinculados a ela também podem ser removidos.',
     )
 
     if (!shouldDelete) {
@@ -93,7 +93,7 @@ export const UserDetailsPage = () => {
       setActionError(
         err instanceof Error
           ? err.message
-          : 'Nao foi possivel apagar a conta.',
+          : 'Não foi possível apagar a conta.',
       )
     } finally {
       setIsDeleting(false)
@@ -102,7 +102,7 @@ export const UserDetailsPage = () => {
 
   const handleDeletePet = async (pet: Pet) => {
     if (!currentUser || currentUser.id !== pet.anuncianteId) {
-      setActionError('Voce so pode apagar pets da sua propria conta.')
+      setActionError('Você só pode apagar pets da sua própria conta.')
       return
     }
 
@@ -122,7 +122,7 @@ export const UserDetailsPage = () => {
       setActionError(
         err instanceof Error
           ? err.message
-          : 'Nao foi possivel apagar o pet.',
+          : 'Não foi possível apagar o pet.',
       )
     }
   }
@@ -140,13 +140,13 @@ export const UserDetailsPage = () => {
       <section className="w-full rounded-[2rem] border border-[var(--brand-line)] bg-white p-8">
         <h1 className="text-4xl text-[var(--brand-title)]">Perfil indisponivel</h1>
         <p className="mt-4 text-sm leading-7 text-[var(--brand-text-soft)]">
-          {error ?? 'Nao encontramos este usuario.'}
+          {error ?? 'Não encontramos este usuário.'}
         </p>
         <Link
           to="/usuarios"
           className="mt-6 inline-flex rounded-full bg-[var(--brand-highlight)] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--brand-highlight-strong)]"
         >
-          Voltar para usuarios
+          Voltar para usuários
         </Link>
       </section>
     )
@@ -158,14 +158,13 @@ export const UserDetailsPage = () => {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--brand-text-muted)]">
-              Perfil de anunciante
+              Perfil
             </p>
             <h1 className="mt-2 text-4xl text-[var(--brand-title)]">
               {user.nome}
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--brand-text-soft)]">
-              Este perfil mostra os dados do usuario e os pets associados ao
-              anunciante no back-end.
+              Aqui estão os seus dados e dos pets que você anunciou. Obrigado por nos ajudar com nossa causa!
             </p>
           </div>
 
@@ -205,8 +204,7 @@ export const UserDetailsPage = () => {
 
         {!isOwner ? (
           <div className="mt-6 rounded-[1.5rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] p-4 text-sm leading-7 text-[var(--brand-text-soft)]">
-            Somente o proprio usuario visualizado pode editar ou apagar esta
-            conta e os pets vinculados.
+            Somente o próprio usuário pode editar ou apagar esta conta e os pets vinculados.
           </div>
         ) : null}
 
@@ -240,7 +238,7 @@ export const UserDetailsPage = () => {
 
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-3xl text-[var(--brand-title)]">Pets do anunciante</h2>
+          <h2 className="text-3xl text-[var(--brand-title)]">Pets anunciados</h2>
           {isOwner ? (
             <Link
               to="/pets/novo"
@@ -257,7 +255,7 @@ export const UserDetailsPage = () => {
               Nenhum pet vinculado
             </h3>
             <p className="mt-3 text-sm leading-7 text-[var(--brand-text-soft)]">
-              Este usuario ainda nao possui pets cadastrados.
+              Este usuário ainda não possui pets cadastrados.
             </p>
           </article>
         ) : (
