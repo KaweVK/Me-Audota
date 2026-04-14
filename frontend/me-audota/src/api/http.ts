@@ -1,4 +1,4 @@
-import { getStoredToken } from '../auth/authStorage'
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
@@ -12,132 +12,77 @@ export class ApiError extends Error {
   }
 }
 
-interface RequestOptions extends Omit<RequestInit, 'body'> {
-  auth?: boolean
-  body?: BodyInit | null
-  json?: unknown
-  token?: string | null
-}
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+})
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
+const extractErrorMessage = (error: AxiosError): string => {
+  const status = error.response?.status
+  const data = error.response?.data as Record<string, unknown> | undefined | string
 
-const defaultErrorMessage = (status: number) => {
   if (status === 401) {
-    return 'Sua sessão expirou. Entre novamente para continuar.'
+    return 'A sua sessão expirou. Entre novamente para continuar.'
   }
 
   if (status === 403) {
-    return 'Você não tem permissão para concluir esta ação.'
+    return 'Não tem permissão para concluir esta ação.'
   }
 
   if (status === 404) {
     return 'Recurso não encontrado.'
   }
 
-  return 'Não foi possível concluir a requisição agora.'
-}
-
-const extractErrorMessage = (raw: string, status: number) => {
-  if (raw.trim().length === 0) {
-    return defaultErrorMessage(status)
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown
-
-    if (isRecord(parsed)) {
-      const candidates = [parsed.message, parsed.error, parsed.details]
-      const message = candidates.find(
-        (value): value is string =>
-          typeof value === 'string' && value.trim().length > 0,
-      )
-
-      if (message) {
+  if (data) {
+    if (typeof data === 'string' && data.trim().length > 0) return data
+    if (typeof data === 'object') {
+      const message = data.message || data.error || data.details
+      if (typeof message === 'string' && message.trim().length > 0) {
         return message
       }
     }
-  } catch {
-    return raw
   }
 
-  return raw
+  return 'Não foi possível concluir o pedido agora.'
 }
 
-const unwrapOptionalLike = (payload: unknown) => {
-  if (isRecord(payload) && 'value' in payload) {
-    return payload.value
-  }
-
-  return payload
-}
-
-const parseJsonSafely = (raw: string) => {
-  if (raw.trim().length === 0) {
-    return undefined
-  }
-
-  try {
-    return JSON.parse(raw) as unknown
-  } catch {
-    return raw
-  }
-}
-
-const createHeaders = (
-  auth: boolean,
-  token: string | null | undefined,
-  hasJsonBody: boolean,
-  incomingHeaders?: HeadersInit,
-) => {
-  const headers = new Headers(incomingHeaders)
-  headers.set('Accept', 'application/json')
-
-  if (hasJsonBody && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json')
-  }
-
-  if (auth) {
-    const resolvedToken = token ?? getStoredToken()
-    if (resolvedToken) {
-      headers.set('Authorization', `Bearer ${resolvedToken}`)
-    }
-  }
-
-  return headers
+interface RequestOptions extends Omit<AxiosRequestConfig, 'url' | 'data'> {
+  json?: unknown
 }
 
 export const request = async <T>(
   path: string,
-  {
-    auth = true,
-    body,
-    headers,
-    json,
-    method = 'GET',
-    token,
-    ...rest
-  }: RequestOptions = {},
+  { json, method = 'GET', ...rest }: RequestOptions = {},
 ): Promise<T> => {
-  const hasJsonBody = json !== undefined
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...rest,
-    method,
-    body: hasJsonBody ? JSON.stringify(json) : body,
-    headers: createHeaders(auth, token, hasJsonBody, headers),
-  })
+  try {
+    const response = await apiClient.request<T>({
+      url: path,
+      method,
+      data: json,
+      ...rest,
+    })
 
-  if (!response.ok) {
-    const rawError = await response.text()
-    throw new ApiError(extractErrorMessage(rawError, response.status), response.status)
+    if (response.status === 204) {
+      return undefined as T
+    }
+
+    const payload = response.data as any
+    if (payload && typeof payload === 'object' && 'value' in payload) {
+      return payload.value as T
+    }
+
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status ?? 500
+      const message = extractErrorMessage(error)
+      throw new ApiError(message, status)
+    }
+    
+    throw new ApiError('Ocorreu um erro inesperado.', 500)
   }
-
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  const rawResponse = await response.text()
-  const parsedResponse = parseJsonSafely(rawResponse)
-
-  return unwrapOptionalLike(parsedResponse) as T
 }

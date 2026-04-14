@@ -62,6 +62,8 @@ const buildUserFormData = (payload: CreateUserPayload | UpdateUserPayload) => {
   return formData
 }
 
+const normalizeEmail = (value: string) => value.trim().toLowerCase()
+
 export const getUsers = async (
   page = 0,
   size = 20,
@@ -88,6 +90,20 @@ export const getAllUsers = async () => {
     ...firstPage.content,
     ...remainingPages.flatMap((pageData) => pageData.content),
   ]
+}
+
+export const getUserByEmail = async (email: string) => {
+  const normalizedEmail = normalizeEmail(email)
+  const users = await getAllUsers()
+  const user = users.find(
+    (candidate) => normalizeEmail(candidate.email) === normalizedEmail,
+  )
+
+  if (!user) {
+    throw new Error('Nao foi possivel identificar o usuario autenticado.')
+  }
+
+  return user
 }
 
 export const getUserById = async (id: number) => {

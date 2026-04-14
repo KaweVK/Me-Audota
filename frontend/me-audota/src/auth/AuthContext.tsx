@@ -4,13 +4,12 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
-import { loginRequest } from '../api/authApi'
+import { loginRequest, logoutRequest } from '../api/authApi'
 import { getUserById } from '../api/userApi'
 import type { LoginPayload } from '../types/auth'
 import {
-  clearStoredToken,
-  decodeSessionSnapshot,
-  persistToken,
+  clearStoredSession,
+  persistSession,
   readStoredSession,
 } from './authStorage'
 import type { User } from '../types/user'
@@ -23,8 +22,13 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(Boolean(session))
 
-  const logout = useCallback(() => {
-    clearStoredToken()
+  const logout = useCallback(async () => {
+    try {
+      await logoutRequest()
+    } catch (e) {
+      console.error(e)
+    }
+    clearStoredSession()
     setSession(null)
     setCurrentUser(null)
     setIsLoading(false)
@@ -51,27 +55,22 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   }, [logout, session])
 
   const login = useCallback(async (payload: LoginPayload) => {
-    const token = await loginRequest(payload)
-    const nextSession = decodeSessionSnapshot(token)
-
-    if (!nextSession) {
-      throw new Error('Token de autenticação inválido.')
-    }
-
-    persistToken(token)
     setIsLoading(true)
-
     try {
+      const nextSession = await loginRequest(payload)
+
+      persistSession(nextSession)
+      
       const usuario = await getUserById(nextSession.userId)
       setSession(nextSession)
       setCurrentUser(usuario)
     } catch (error) {
-      logout()
+      clearStoredSession()
       throw error
     } finally {
       setIsLoading(false)
     }
-  }, [logout])
+  }, [])
 
   useEffect(() => {
     if (!session || currentUser) {

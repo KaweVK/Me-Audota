@@ -139,7 +139,7 @@ export const getPetById = async (id: number): Promise<Pet> => {
 export const createPet = async (payload: CreatePetPayload): Promise<Pet> => {
   const createdPet = await request<unknown>('/pet/', {
     method: 'POST',
-    body: buildPetFormData(payload),
+    json: buildPetFormData(payload),
   })
 
   return toPet(createdPet)
@@ -151,7 +151,7 @@ export const updatePet = async (
 ): Promise<Pet> => {
   const updatedPet = await request<unknown>(`/pet/${id}`, {
     method: 'PUT',
-    body: buildPetFormData(payload),
+    json: buildPetFormData(payload),
   })
 
   return toPet(updatedPet)
