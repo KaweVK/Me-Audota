@@ -12,6 +12,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/login")
 public class AuthenticationController {
@@ -27,8 +30,8 @@ public class AuthenticationController {
         var tokenAuth = new UsernamePasswordAuthenticationToken(data.email(), data.senha());
         var autenthication = authenticationManager.authenticate(tokenAuth);
 
-        // Gera o token JWT
-        var tokenJwt = tokenService.generateToken((Usuario) autenthication.getPrincipal());
+        var usuario = (Usuario) autenthication.getPrincipal();
+        var tokenJwt = tokenService.generateToken(usuario);
 
         // Cria o Cookie HttpOnly com o token
         Cookie jwtCookie = new Cookie("jwt", tokenJwt);
@@ -41,7 +44,11 @@ public class AuthenticationController {
         response.addCookie(jwtCookie);
 
         // Retorna sucesso, mas sem o token no corpo do JSON
-        return ResponseEntity.ok().body("Login efetuado com sucesso. Token armazenado em cookie seguro.");
+        Map<String, Object> body = new HashMap<>();
+        body.put("id", usuario.getId());
+        body.put("email", usuario.getEmail());
+
+        return ResponseEntity.ok(body);
     }
 
     // Novo endpoint para fazer logout e limpar o cookie

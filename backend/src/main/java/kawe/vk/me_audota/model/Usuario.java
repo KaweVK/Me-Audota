@@ -1,9 +1,7 @@
 package kawe.vk.me_audota.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -33,6 +31,8 @@ public class Usuario implements UserDetails {
     private String senha;
     @Column(name = "telefone", nullable = false)
     private String telefone;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "anunciante", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pet> petsAnunciados;
     @CreatedDate
