@@ -29,6 +29,8 @@ public record RegisterPetDTO(
         String cor,
         String sexo,
         @NotNull
-        StatusPet status
+        StatusPet status,
+        @NotNull
+        Long anuncianteId
 ) {
 }

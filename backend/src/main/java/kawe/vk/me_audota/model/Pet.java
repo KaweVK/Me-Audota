@@ -51,6 +51,9 @@ public class Pet {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 80,  nullable = false)
     private StatusPet status;
+    @ManyToOne
+    @JoinColumn(name = "anunciante_id", nullable = false)
+    private Usuario anunciante;
     @CreatedDate
     @Column(name = "register_date", nullable = false)
     private LocalDateTime registerDate;

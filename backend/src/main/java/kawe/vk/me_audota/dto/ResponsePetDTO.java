@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import kawe.vk.me_audota.model.enums.Especie;
 import kawe.vk.me_audota.model.enums.StatusPet;
+import org.aspectj.weaver.ast.Not;
 
 import java.util.List;
 
@@ -27,6 +28,8 @@ public record ResponsePetDTO(
         String cor,
         String sexo,
         @NotNull
-        StatusPet status
+        StatusPet status,
+        @NotNull
+        Long anuncianteId
 ) {
 }
