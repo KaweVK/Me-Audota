@@ -1,5 +1,6 @@
 package kawe.vk.me_audota.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import kawe.vk.me_audota.model.enums.Especie;
 import kawe.vk.me_audota.model.enums.StatusPet;
@@ -52,6 +53,7 @@ public class Pet {
     @Column(name = "status", length = 80,  nullable = false)
     private StatusPet status;
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "anunciante_id", nullable = false)
     private Usuario anunciante;
     @CreatedDate

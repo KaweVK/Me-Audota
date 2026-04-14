@@ -2,6 +2,7 @@ package kawe.vk.me_audota.controller;
 
 import kawe.vk.me_audota.dto.RegisterUsuarioDTO;
 import kawe.vk.me_audota.dto.ResponseUsuarioDTO;
+import kawe.vk.me_audota.mapper.UsuarioMapper;
 import kawe.vk.me_audota.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final UsuarioMapper usuarioMapper;
 
     @GetMapping(
             value = "/{id}"
@@ -41,9 +43,9 @@ public class UsuarioController {
             value = "/",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
     )
-    public ResponseEntity<Object> create(@ModelAttribute RegisterUsuarioDTO registerUsuarioDTO) {
+    public ResponseEntity<ResponseUsuarioDTO> create(@ModelAttribute RegisterUsuarioDTO registerUsuarioDTO) {
         var usuario = usuarioService.create(registerUsuarioDTO);
-        return ResponseEntity.ok().body(usuario);
+        return ResponseEntity.ok().body(usuario.map(usuarioMapper::toResponseDTO).get());
     }
 
     @PutMapping(
