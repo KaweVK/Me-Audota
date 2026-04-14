@@ -61,7 +61,7 @@ export const PetCard = ({ pet }: PetCardProps) => {
         <p className="text-sm leading-relaxed text-[var(--brand-text-muted)]">
           {truncate(
             pet.descricao ||
-              'Esse pet esta esperando por uma familia para dividir muito amor.',
+              'Esse pet está esperando por uma família para dividir muito amor.',
           )}
         </p>
 

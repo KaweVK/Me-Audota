@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPet } from '../api/petApi'
+import { useAuth } from '../auth/useAuth'
 import {
   PetForm,
   type PetFormInitialValues,
@@ -21,22 +22,32 @@ const initialValues: PetFormInitialValues = {
 
 export const CreatePetPage = () => {
   const navigate = useNavigate()
+  const { currentUser, refreshCurrentUser } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (payload: PetFormSubmitPayload) => {
+    if (!currentUser) {
+      setError('E necessario estar autenticado para cadastrar um pet.')
+      return
+    }
+
     setIsSubmitting(true)
     setError(null)
 
     try {
-      const createdPet = await createPet(payload)
+      const createdPet = await createPet({
+        ...payload,
+        anuncianteId: currentUser.id,
+      })
+      await refreshCurrentUser()
       navigate(createdPet.id > 0 ? `/pets/${createdPet.id}` : '/pets')
     } catch (err) {
-      const message =
+      setError(
         err instanceof Error
           ? err.message
-          : 'Não foi possível salvar o pet agora.'
-      setError(message)
+          : 'Não foi possível salvar o pet agora.',
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -44,11 +55,11 @@ export const CreatePetPage = () => {
 
   return (
     <PetForm
-      backTo="/"
+      backTo="/pets"
       backLabel="Voltar"
       error={error}
       initialValues={initialValues}
-      intro="Preencha os dados do pet e envie tudo, incluindo várias imagens se quiser."
+      intro="Preencha os dados do pet e envie uma ou mais imagens para o anúncio."
       isSubmitting={isSubmitting}
       submitLabel="Salvar pet"
       title="Adicionar pet"

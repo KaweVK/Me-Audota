@@ -15,6 +15,7 @@ export interface Pet {
   cor: string
   sexo?: PetSexo
   status: PetStatus
+  anuncianteId: number
 }
 
 export interface CreatePetPayload {
@@ -27,6 +28,7 @@ export interface CreatePetPayload {
   cor: string
   sexo?: PetSexo
   status: PetStatus
+  anuncianteId: number
 }
 
 export interface UpdatePetPayload extends CreatePetPayload {

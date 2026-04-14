@@ -1,11 +1,5 @@
-import type {
-  CreatePetPayload,
-  PageResponse,
-  Pet,
-  UpdatePetPayload,
-} from '../types/pet'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+import type { CreatePetPayload, PageResponse, Pet, UpdatePetPayload } from '../types/pet'
+import { request } from './http'
 
 const parseNumber = (value: unknown, fallback = 0) => {
   const parsed = Number(value)
@@ -21,6 +15,22 @@ const parseImages = (value: unknown): string[] => {
   }
 
   return value.filter((item): item is string => typeof item === 'string')
+}
+
+const parseAnuncianteId = (payload: Record<string, unknown>) => {
+  if ('anuncianteId' in payload) {
+    return parseNumber(payload.anuncianteId, 0)
+  }
+
+  if (
+    'anunciante' in payload &&
+    isObject(payload.anunciante) &&
+    'id' in payload.anunciante
+  ) {
+    return parseNumber(payload.anunciante.id, 0)
+  }
+
+  return 0
 }
 
 const toPet = (payload: unknown): Pet => {
@@ -40,34 +50,8 @@ const toPet = (payload: unknown): Pet => {
     cor: typeof payload.cor === 'string' ? payload.cor : 'Nao informado',
     sexo: typeof payload.sexo === 'string' ? payload.sexo : undefined,
     status: typeof payload.status === 'string' ? payload.status : 'DISPONIVEL',
+    anuncianteId: parseAnuncianteId(payload),
   }
-}
-
-const buildErrorMessage = async (response: Response): Promise<string> => {
-  if (response.status === 404) {
-    return 'Pet nao encontrado.'
-  }
-
-  const text = await response.text()
-  if (text.trim().length > 0) {
-    return text
-  }
-
-  return 'Nao foi possivel carregar os dados agora.'
-}
-
-const fetchJson = async <T>(path: string): Promise<T> => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(await buildErrorMessage(response))
-  }
-
-  return (await response.json()) as T
 }
 
 const appendOptionalField = (
@@ -92,6 +76,7 @@ const buildPetFormData = (
   formData.append('especie', payload.especie)
   formData.append('cor', payload.cor.trim())
   formData.append('status', payload.status)
+  formData.append('anuncianteId', String(payload.anuncianteId))
   appendOptionalField(formData, 'sexo', payload.sexo)
 
   payload.imagens.forEach((imagem) => {
@@ -111,9 +96,7 @@ export const getPets = async (
   page = 0,
   size = 12,
 ): Promise<PageResponse<Pet>> => {
-  const payload = await fetchJson<Record<string, unknown>>(
-    `/pet/?page=${page}&size=${size}`,
-  )
+  const payload = await request<Record<string, unknown>>(`/pet/?page=${page}&size=${size}`)
 
   const items = Array.isArray(payload.content) ? payload.content : []
 
@@ -149,35 +132,15 @@ export const getAllPets = async (): Promise<Pet[]> => {
 }
 
 export const getPetById = async (id: number): Promise<Pet> => {
-  const payload = await fetchJson<unknown>(`/pet/${id}`)
-
-  if (isObject(payload) && 'value' in payload) {
-    return toPet((payload as { value: unknown }).value)
-  }
-
+  const payload = await request<unknown>(`/pet/${id}`)
   return toPet(payload)
 }
 
 export const createPet = async (payload: CreatePetPayload): Promise<Pet> => {
-  const formData = buildPetFormData(payload)
-
-  const response = await fetch(`${API_BASE_URL}/pet/`, {
+  const createdPet = await request<unknown>('/pet/', {
     method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-    },
+    body: buildPetFormData(payload),
   })
-
-  if (!response.ok) {
-    throw new Error(await buildErrorMessage(response))
-  }
-
-  const createdPet = (await response.json()) as unknown
-
-  if (isObject(createdPet) && 'value' in createdPet) {
-    return toPet((createdPet as { value: unknown }).value)
-  }
 
   return toPet(createdPet)
 }
@@ -186,25 +149,16 @@ export const updatePet = async (
   id: number,
   payload: UpdatePetPayload,
 ): Promise<Pet> => {
-  const formData = buildPetFormData(payload)
-
-  const response = await fetch(`${API_BASE_URL}/pet/${id}`, {
+  const updatedPet = await request<unknown>(`/pet/${id}`, {
     method: 'PUT',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-    },
+    body: buildPetFormData(payload),
   })
 
-  if (!response.ok) {
-    throw new Error(await buildErrorMessage(response))
-  }
-
-  const updatedPet = (await response.json()) as unknown
-
-  if (isObject(updatedPet) && 'value' in updatedPet) {
-    return toPet((updatedPet as { value: unknown }).value)
-  }
-
   return toPet(updatedPet)
+}
+
+export const deletePet = async (id: number) => {
+  await request<void>(`/pet/${id}`, {
+    method: 'DELETE',
+  })
 }

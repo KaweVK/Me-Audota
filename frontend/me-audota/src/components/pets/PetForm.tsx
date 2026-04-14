@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import type { PetEspecie, PetStatus, PetSexo } from '../../types/pet'
 
@@ -9,7 +8,7 @@ const especieOptions: Array<{ label: string; value: PetEspecie }> = [
 ]
 
 const sexoOptions: Array<{ label: string; value: PetSexo | '' }> = [
-  { label: 'Nao informado', value: '' },
+  { label: 'Não informado', value: '' },
   { label: 'Macho', value: 'M' },
   { label: 'Fêmea', value: 'F' },
 ]
@@ -106,14 +105,14 @@ export const PetForm = ({
 
   const selectedFilesLabel = useMemo(() => {
     if (formValues.novasImagens.length === 0) {
-      return 'Nenhum novo arquivo selecionado.'
+      return 'Nenhum arquivo novo selecionado.'
     }
 
     if (formValues.novasImagens.length === 1) {
       return formValues.novasImagens[0].name
     }
 
-    return `${formValues.novasImagens.length} novos arquivos selecionados`
+    return `${formValues.novasImagens.length} arquivos prontos para envio`
   }, [formValues.novasImagens])
 
   const handleFieldChange =
@@ -188,7 +187,7 @@ export const PetForm = ({
     }
 
     if (formValues.idadeAno < 0 || formValues.idadeMes < 0) {
-      return 'A idade nao pode ser negativa.'
+      return 'A idade não pode ser negativa.'
     }
 
     if (formValues.idadeMes > 11) {
@@ -196,7 +195,7 @@ export const PetForm = ({
     }
 
     if (formValues.descricao.length > 200) {
-      return 'A descricao pode ter no maximo 200 caracteres.'
+      return 'A descrição pode ter no máximo 200 caracteres.'
     }
 
     return null
@@ -229,32 +228,36 @@ export const PetForm = ({
 
   return (
     <section className="flex w-full flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-4xl text-[var(--brand-brown-900)]">{title}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--brand-text-muted)]">
+            Pets
+          </p>
+          <h1 className="mt-2 text-4xl text-[var(--brand-title)]">{title}</h1>
+        </div>
+
         <Link
           to={backTo}
-          className="rounded-full border border-[var(--brand-line)] bg-white px-4 py-2 text-sm font-bold text-[var(--brand-brown-900)] transition-colors hover:bg-[var(--brand-surface)]"
+          className="rounded-full border border-[var(--brand-line)] bg-white px-4 py-2 text-sm font-semibold text-[var(--brand-title)] transition-colors hover:bg-[var(--brand-surface-strong)]"
         >
           {backLabel}
         </Link>
       </div>
 
-      <article className="rounded-3xl border border-[var(--brand-line)] bg-white p-5 md:p-7">
-        <p className="mb-6 text-sm font-semibold text-[var(--brand-text-muted)]">
+      <article className="rounded-[2rem] border border-[var(--brand-line)] bg-white p-6 shadow-[0_24px_60px_-42px_rgba(34,24,18,0.55)] md:p-8">
+        <p className="max-w-3xl text-sm leading-7 text-[var(--brand-text-soft)]">
           {intro}
         </p>
 
         {visibleError ? (
-          <div className="mb-6 rounded-2xl border border-[rgba(138,92,57,0.35)] bg-[rgba(138,92,57,0.12)] p-4">
-            <p className="text-sm font-semibold text-[var(--brand-brown-900)]">
-              {visibleError}
-            </p>
+          <div className="mt-6 rounded-[1.5rem] border border-[rgba(130,75,49,0.25)] bg-[rgba(130,75,49,0.08)] p-4 text-sm font-semibold text-[var(--brand-title)]">
+            {visibleError}
           </div>
         ) : null}
 
-        <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+        <form onSubmit={handleSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
               Nome
             </span>
             <input
@@ -263,18 +266,18 @@ export const PetForm = ({
               onChange={handleFieldChange('nome')}
               placeholder="Ex.: Mel"
               required
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
               Espécie
             </span>
             <select
               value={formValues.especie}
               onChange={handleFieldChange('especie')}
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             >
               {especieOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -284,9 +287,9 @@ export const PetForm = ({
             </select>
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
-              Idade (meses)
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
+              Idade em meses
             </span>
             <input
               type="number"
@@ -296,13 +299,13 @@ export const PetForm = ({
               onChange={handleFieldChange('idadeMes')}
               placeholder="Ex.: 1"
               required
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
-              Idade (anos)
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
+              Idade em anos
             </span>
             <input
               type="number"
@@ -311,12 +314,12 @@ export const PetForm = ({
               onChange={handleFieldChange('idadeAno')}
               placeholder="Ex.: 2"
               required
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
               Cor
             </span>
             <input
@@ -325,18 +328,18 @@ export const PetForm = ({
               onChange={handleFieldChange('cor')}
               placeholder="Ex.: Caramelo"
               required
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
               Sexo
             </span>
             <select
               value={formValues.sexo}
               onChange={handleFieldChange('sexo')}
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             >
               {sexoOptions.map((option) => (
                 <option key={option.value || 'empty'} value={option.value}>
@@ -346,14 +349,14 @@ export const PetForm = ({
             </select>
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
               Status
             </span>
             <select
               value={formValues.status}
               onChange={handleFieldChange('status')}
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -363,33 +366,33 @@ export const PetForm = ({
             </select>
           </label>
 
-          <label className="md:col-span-2 flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
-              Descricao
+          <label className="flex flex-col gap-2 md:col-span-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
+              Descrição
             </span>
             <textarea
               rows={4}
               value={formValues.descricao}
               onChange={handleFieldChange('descricao')}
               maxLength={200}
-              placeholder="Conte um pouco sobre o pet..."
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none focus:ring-2 focus:ring-[rgba(120,135,34,0.35)]"
+              placeholder="Conte um pouco sobre o pet"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             />
-            <span className="text-xs font-semibold text-[var(--brand-text-muted)]">
+            <span className="text-xs font-medium text-[var(--brand-text-soft)]">
               {formValues.descricao.length}/200 caracteres
             </span>
           </label>
 
           {formValues.imagensExistentes.length > 0 ? (
-            <div className="md:col-span-2 grid gap-3">
-              <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+            <div className="grid gap-3 md:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
                 Imagens atuais
               </span>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {formValues.imagensExistentes.map((imageUrl, index) => (
                   <article
                     key={`${imageUrl}-${index}`}
-                    className="overflow-hidden rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-surface)]"
+                    className="overflow-hidden rounded-[1.5rem] border border-[var(--brand-line)] bg-[var(--brand-surface)]"
                   >
                     <img
                       src={imageUrl}
@@ -397,13 +400,13 @@ export const PetForm = ({
                       className="h-44 w-full object-cover"
                     />
                     <div className="flex items-center justify-between gap-3 p-3">
-                      <span className="text-sm font-semibold text-[var(--brand-brown-900)]">
+                      <span className="text-sm font-medium text-[var(--brand-title)]">
                         Imagem {index + 1}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingImage(imageUrl)}
-                        className="rounded-full border border-[rgba(138,92,57,0.28)] px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-[var(--brand-brown-900)] transition-colors hover:bg-[rgba(138,92,57,0.1)]"
+                        className="rounded-full border border-[rgba(130,75,49,0.2)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-title)] transition-colors hover:bg-[rgba(130,75,49,0.08)]"
                       >
                         Remover
                       </button>
@@ -414,8 +417,8 @@ export const PetForm = ({
             </div>
           ) : null}
 
-          <label className="md:col-span-2 flex flex-col gap-1">
-            <span className="text-xs font-extrabold uppercase tracking-[0.1em] text-[var(--brand-text-muted)]">
+          <label className="flex flex-col gap-2 md:col-span-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-text-muted)]">
               Novas imagens
             </span>
             <input
@@ -423,25 +426,26 @@ export const PetForm = ({
               multiple
               accept="image/*"
               onChange={handleFilesChange}
-              className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-brown-900)] outline-none"
+              className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none"
             />
-            <span className="text-xs font-semibold text-[var(--brand-text-muted)]">
+            <span className="text-xs font-medium text-[var(--brand-text-soft)]">
               {selectedFilesLabel}
             </span>
+
             {formValues.novasImagens.length > 0 ? (
-              <div className="grid gap-2 rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-surface)] p-3">
+              <div className="grid gap-2 rounded-[1.5rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] p-3">
                 {formValues.novasImagens.map((imagem) => (
                   <div
                     key={fileKey(imagem)}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-[1rem] bg-white px-3 py-2"
                   >
-                    <span className="text-sm font-semibold text-[var(--brand-brown-900)]">
+                    <span className="text-sm font-medium text-[var(--brand-title)]">
                       {imagem.name}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleRemoveNewImage(imagem)}
-                      className="rounded-full border border-[rgba(138,92,57,0.28)] px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide text-[var(--brand-brown-900)] transition-colors hover:bg-[rgba(138,92,57,0.1)]"
+                      className="rounded-full border border-[rgba(130,75,49,0.2)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-title)] transition-colors hover:bg-[rgba(130,75,49,0.08)]"
                     >
                       Remover
                     </button>
@@ -451,11 +455,11 @@ export const PetForm = ({
             ) : null}
           </label>
 
-          <div className="md:col-span-2">
+          <div className="flex flex-wrap items-center gap-3 pt-2 md:col-span-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full bg-[var(--brand-green-700)] px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-[var(--brand-surface)] transition-colors hover:bg-[var(--brand-green-900)] disabled:cursor-not-allowed disabled:opacity-70"
+              className="rounded-full bg-[var(--brand-highlight)] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--brand-highlight-strong)] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting ? 'Salvando...' : submitLabel}
             </button>

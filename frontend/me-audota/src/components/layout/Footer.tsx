@@ -20,7 +20,19 @@ export const Footer = () => {
             to="/"
             className="font-semibold text-[var(--brand-surface)] transition-colors hover:text-[var(--brand-green-500)]"
           >
-            Início
+            Pets
+          </Link>
+          <Link
+            to="/adotados"
+            className="font-semibold text-[var(--brand-surface)] transition-colors hover:text-[var(--brand-green-500)]"
+          >
+            Adotados
+          </Link>
+          <Link
+            to="/usuarios"
+            className="font-semibold text-[var(--brand-surface)] transition-colors hover:text-[var(--brand-green-500)]"
+          >
+            Usuários
           </Link>
           <Link
             to="/pets/novo"
