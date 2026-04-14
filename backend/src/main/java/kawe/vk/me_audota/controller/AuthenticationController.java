@@ -1,35 +1,59 @@
 package kawe.vk.me_audota.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kawe.vk.me_audota.dto.AuthenticationDataDto;
-import kawe.vk.me_audota.dto.TokenJwtDto;
 import kawe.vk.me_audota.model.Usuario;
 import kawe.vk.me_audota.service.TokenService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/login")
-@RequiredArgsConstructor
 public class AuthenticationController {
 
-    private final AuthenticationManager manager;
-    private final TokenService tokenService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private TokenService tokenService;
 
     @PostMapping
-    public ResponseEntity<Object> login(@RequestBody @Valid AuthenticationDataDto dto) {
-        var token = new UsernamePasswordAuthenticationToken(dto.email(), dto.senha());
-        var auth = manager.authenticate(token);
+    public ResponseEntity<?> efetuarLogin(@RequestBody @Valid AuthenticationDataDto data, HttpServletResponse response) {
+        var tokenAuth = new UsernamePasswordAuthenticationToken(data.email(), data.senha());
+        var autenthication = authenticationManager.authenticate(tokenAuth);
 
-        var tokenJwt = tokenService.generateToken((Usuario) auth.getPrincipal());
+        // Gera o token JWT
+        var tokenJwt = tokenService.generateToken((Usuario) autenthication.getPrincipal());
 
-        return ResponseEntity.ok(new TokenJwtDto(tokenJwt));
+        // Cria o Cookie HttpOnly com o token
+        Cookie jwtCookie = new Cookie("jwt", tokenJwt);
+        jwtCookie.setHttpOnly(true); // O JavaScript do frontend não consegue ler este cookie
+        jwtCookie.setSecure(false); // ATENÇÃO: Em produção (com HTTPS), muda para true!
+        jwtCookie.setPath("/"); // O cookie será enviado para todas as rotas da API
+        jwtCookie.setMaxAge(2 * 60 * 60); // Expira em 2 horas (igual ao tempo do token)
+
+        // Adiciona o cookie à resposta
+        response.addCookie(jwtCookie);
+
+        // Retorna sucesso, mas sem o token no corpo do JSON
+        return ResponseEntity.ok().body("Login efetuado com sucesso. Token armazenado em cookie seguro.");
     }
 
+    // Novo endpoint para fazer logout e limpar o cookie
+    @PostMapping("/logout")
+    public ResponseEntity<?> efetuarLogout(HttpServletResponse response) {
+        Cookie jwtCookie = new Cookie("jwt", null);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(false); // Em produção, true
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0); // Deleta o cookie imediatamente
+
+        response.addCookie(jwtCookie);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -2,69 +2,61 @@ package kawe.vk.me_audota.infra;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import kawe.vk.me_audota.exceptions.InvalidTokenJWT;
 import kawe.vk.me_audota.repository.UsuarioRepository;
 import kawe.vk.me_audota.service.TokenService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class SecurityFilter extends OncePerRequestFilter {
 
-    private final TokenService tokenService;
-    private final UsuarioRepository usuarioRepository;
-    private final HandlerExceptionResolver handlerExceptionResolver;
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private UsuarioRepository repository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String tokenJWT = recuperarToken(request);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // Agora recupera o token do Cookie em vez do Header
+        var token = recoverToken(request);
 
-            if (tokenJWT != null) {
-                String subject = tokenService.getSubject(tokenJWT);
-                var usuarioOptional = usuarioRepository.findByEmail(subject);
-
-                if (usuarioOptional.isPresent()) {
-                    var usuario = usuarioOptional.get();
-
-                    var authentication = new UsernamePasswordAuthenticationToken(
-                            usuario,
-                            null,
-                            Collections.emptyList()
-                    );
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
+        if(token != null) {
+            String subject = null;
+            try {
+                subject = tokenService.getSubject(token);
+            } catch (InvalidTokenJWT e) {
+                throw new RuntimeException(e);
             }
+            var usuario = repository.findByEmail(subject);
 
-            filterChain.doFilter(request, response);
-
-        } catch (Exception e) {
-            log.error("Erro ao autenticar requisição: {}", e.getMessage(), e);
-            handlerExceptionResolver.resolveException(request, response, null, e);
+            if (usuario.isPresent()) {
+                var autenthication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.get().getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(autenthication);
+            }
         }
+        filterChain.doFilter(request, response);
     }
 
-    private String recuperarToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return null;
+    // Método modificado para procurar o cookie "jwt"
+    private String recoverToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwt".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
-
-        return authHeader.substring(7);
+        return null; // Retorna null se não encontrar o cookie
     }
 }

@@ -14,19 +14,12 @@ public class WebConfig implements WebMvcConfigurer {
     private String allowedOrigins;
 
     @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorParameter(false)
-                .ignoreAcceptHeader(false).useRegisteredExtensionsOnly(false)
-                .defaultContentType(MediaType.APPLICATION_JSON)
-                .mediaType("json", MediaType.APPLICATION_JSON)
-                .mediaType("xml", MediaType.APPLICATION_XML);
-    }
-
-    @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") //
-                .allowedOrigins(allowedOrigins)
+        registry.addMapping("/**")
+                .allowedOrigins(allowedOrigins) // O endereço do teu frontend React
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                // FUNDAMENTAL: allowCredentials(true) permite que o frontend envie os cookies
+                .allowCredentials(true);
     }
 }
