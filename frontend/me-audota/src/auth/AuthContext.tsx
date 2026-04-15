@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       const usuario = await getUserById(session.userId)
       setCurrentUser(usuario)
     } catch {
-      logout()
+      await logout()
       throw new Error('Não foi possível restaurar sua sessão.')
     } finally {
       setIsLoading(false)
@@ -80,15 +81,18 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     void refreshCurrentUser()
   }, [currentUser, refreshCurrentUser, session])
 
-  const value: AuthContextValue = {
-    authEmail: session?.email ?? null,
-    currentUser,
-    isAuthenticated: Boolean(session),
-    isLoading,
-    login,
-    logout,
-    refreshCurrentUser,
-  }
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      authEmail: session?.email ?? null,
+      currentUser,
+      isAuthenticated: Boolean(session),
+      isLoading,
+      login,
+      logout,
+      refreshCurrentUser,
+    }),
+    [currentUser, isLoading, login, logout, refreshCurrentUser, session],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

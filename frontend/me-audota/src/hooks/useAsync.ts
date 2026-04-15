@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react'
 
 interface AsyncState<T> {
   data: T | null
@@ -22,7 +22,7 @@ interface UseAsyncReturn<T> extends AsyncState<T> {
  */
 export function useAsync<T>(
   asyncFn: () => Promise<T>,
-  deps: React.DependencyList = [],
+  deps: DependencyList = [],
 ): UseAsyncReturn<T> {
   const [state, setState] = useState<AsyncState<T>>({
     data: null,
@@ -35,7 +35,9 @@ export function useAsync<T>(
 
   useEffect(() => {
     mountedRef.current = true
-    return () => { mountedRef.current = false }
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   useEffect(() => {
@@ -43,7 +45,9 @@ export function useAsync<T>(
 
     asyncFn().then(
       (data) => {
-        if (mountedRef.current) setState({ data, isLoading: false, error: null })
+        if (mountedRef.current) {
+          setState({ data, isLoading: false, error: null })
+        }
       },
       (err: unknown) => {
         if (mountedRef.current) {
