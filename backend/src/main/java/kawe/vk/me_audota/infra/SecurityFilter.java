@@ -9,12 +9,14 @@ import kawe.vk.me_audota.exceptions.InvalidTokenJWT;
 import kawe.vk.me_audota.repository.UsuarioRepository;
 import kawe.vk.me_audota.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -26,37 +28,41 @@ public class SecurityFilter extends OncePerRequestFilter {
     private UsuarioRepository repository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // Agora recupera o token do Cookie em vez do Header
-        var token = recoverToken(request);
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        if(token != null) {
-            String subject = null;
+        var token = extractJwtFromCookie(request);
+
+        if (token != null) {
             try {
-                subject = tokenService.getSubject(token);
+                var subject = tokenService.getSubject(token);
+                repository.findByEmail(subject).ifPresent(usuario -> {
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            usuario, null, usuario.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                });
             } catch (InvalidTokenJWT e) {
-                throw new RuntimeException(e);
-            }
-            var usuario = repository.findByEmail(subject);
-
-            if (usuario.isPresent()) {
-                var autenthication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.get().getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(autenthication);
+                // Token inválido ou expirado: limpa contexto e retorna 401
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return;
             }
         }
+
         filterChain.doFilter(request, response);
     }
 
-    // Método modificado para procurar o cookie "jwt"
-    private String recoverToken(HttpServletRequest request) {
+    private String extractJwtFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null; // Retorna null se não encontrar o cookie
+        if (cookies == null) return null;
+
+        return Arrays.stream(cookies)
+                .filter(c -> "jwt".equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 }

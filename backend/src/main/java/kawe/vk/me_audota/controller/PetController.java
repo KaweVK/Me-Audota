@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/pet")
 @RequiredArgsConstructor
@@ -16,49 +18,44 @@ public class PetController {
 
     private final PetService petService;
 
-    @GetMapping(
-            value = "/{id}"
-    )
-    public ResponseEntity<Object> findById(@PathVariable Long id) {
-        var pet = petService.findById(id);
-        if (pet.isPresent()) {
-            return ResponseEntity.ok().body(pet);
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponsePetDTO> findById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(petService.findById(id));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/")
     public ResponseEntity<Page<ResponsePetDTO>> findAll(
-            @RequestParam(value = "page", defaultValue = "0")
-            Integer page,
-            @RequestParam(value = "size", defaultValue = "10")
-            Integer size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        Page<ResponsePetDTO> pets = petService.findAll(page, size);
-        return ResponseEntity.ok(pets);
+        return ResponseEntity.ok(petService.findAll(page, size));
     }
 
-    @PostMapping(
-            value = "/",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
-    )
-    public ResponseEntity<Object> create(@ModelAttribute RegisterPetDTO registerPetDTO) {
-        var pet = petService.create(registerPetDTO);
-        return ResponseEntity.ok().body(pet);
+    @PostMapping(value = "/", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<Object> create(@ModelAttribute RegisterPetDTO dto) {
+        return ResponseEntity.ok(petService.create(dto));
     }
 
-    @PutMapping(
-            value = "/{id}",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}
-    )
-    public ResponseEntity<Object> update(@PathVariable Long id, @ModelAttribute RegisterPetDTO registerPetDTO) {
-        var pet = petService.update(id, registerPetDTO);
-        return ResponseEntity.ok().body(pet);
+    @PutMapping(value = "/{id}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<Object> update(@PathVariable Long id, @ModelAttribute RegisterPetDTO dto) {
+        try {
+            return ResponseEntity.ok(petService.update(id, dto));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Long id) {
-        petService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        try {
+            petService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

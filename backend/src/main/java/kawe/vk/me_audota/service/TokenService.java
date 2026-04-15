@@ -16,39 +16,41 @@ import java.time.ZoneOffset;
 @Service
 public class TokenService {
 
+    private static final String ISSUER = "MeAudota";
+    private static final int EXPIRY_HOURS = 2;
+    private static final ZoneOffset ZONE_OFFSET = ZoneOffset.of("-03:00");
+
     @Value("${api.security.token.secret}")
     private String secret;
 
     public String generateToken(Usuario usuario) {
         try {
-            var algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("MeAudota")
+                    .withIssuer(ISSUER)
                     .withSubject(usuario.getEmail())
                     .withClaim("id", String.valueOf(usuario.getId()))
-                    .withExpiresAt(dataExpiracao())
-                    .sign(algorithm);
-        } catch (JWTCreationException exception){
-            throw new RuntimeException("Erro ao gerar JWT", exception);
+                    .withExpiresAt(expiresAt())
+                    .sign(Algorithm.HMAC256(secret));
+        } catch (JWTCreationException e) {
+            throw new RuntimeException("Erro ao gerar JWT", e);
         }
     }
 
-    public String getSubject(String token) throws InvalidTokenJWT {
+    public String getSubject(String token) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
-                    .withIssuer("MeAudota")
+            return JWT.require(Algorithm.HMAC256(secret))
+                    .withIssuer(ISSUER)
                     .build()
                     .verify(token)
                     .getSubject();
-
-        } catch (JWTVerificationException exception){
-            throw new InvalidTokenJWT("Invalid JWT");
+        } catch (JWTVerificationException e) {
+            throw new InvalidTokenJWT("Token JWT inválido ou expirado", e);
         }
     }
 
-    private Instant dataExpiracao() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    private Instant expiresAt() {
+        return LocalDateTime.now()
+                .plusHours(EXPIRY_HOURS)
+                .toInstant(ZONE_OFFSET);
     }
-
 }

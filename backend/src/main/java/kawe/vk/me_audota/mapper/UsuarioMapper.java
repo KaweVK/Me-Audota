@@ -12,27 +12,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = "spring")
 public abstract class UsuarioMapper {
 
-     @Autowired
-     PetRepository petRepository;
+    @Autowired
+    protected PetRepository petRepository;
 
-     @Mapping(source = "petsAnunciadosIds", target = "petsAnunciados")
-     public abstract Usuario toEntity(ResponseUsuarioDTO responseUsuarioDTO);
+    @Mapping(target = "petsAnunciados", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "registerDate", ignore = true)
+    @Mapping(target = "updateDate", ignore = true)
+    public abstract Usuario toEntity(RegisterUsuarioDTO dto);
 
-     public abstract Usuario toEntity(RegisterUsuarioDTO registerUsuarioDTO);
+    @Mapping(source = "petsAnunciados", target = "petsAnunciadosIds")
+    public abstract ResponseUsuarioDTO toResponseDTO(Usuario usuario);
 
-     @Mapping(source = "petsAnunciados", target = "petsAnunciadosIds")
-     public abstract ResponseUsuarioDTO toResponseDTO(Usuario usuario);
-
-     public abstract RegisterUsuarioDTO toRegisterDTO(Usuario usuario);
-
-     protected Pet map(Long id) {
-          if (id == null) {
-               return null;
-          }
-          return petRepository.findById(id).orElse(null);
-     }
-
-        protected Long map(Pet pet) {
-             return pet != null ? pet.getId() : null;
-        }
+    protected Long map(Pet pet) {
+        return pet != null ? pet.getId() : null;
+    }
 }

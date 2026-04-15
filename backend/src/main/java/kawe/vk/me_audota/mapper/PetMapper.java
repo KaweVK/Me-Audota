@@ -8,24 +8,18 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = {UsuarioMapper.class})
+@Mapper(componentModel = "spring")
 public abstract class PetMapper {
 
-     @Autowired
-     UsuarioRepository usuarioRepository;
+    @Autowired
+    UsuarioRepository usuarioRepository;
 
-     @Mapping(target = "anunciante", expression = "java( usuarioRepository.findById(responsePetDTO.anuncianteId()).orElse(null) )")
-     public abstract Pet toEntity(ResponsePetDTO responsePetDTO);
+    @Mapping(target = "imagens", ignore = true)
+    @Mapping(target = "registerDate", ignore = true)
+    @Mapping(target = "updateDate", ignore = true)
+    @Mapping(target = "anunciante", expression = "java(usuarioRepository.findById(registerPetDTO.anuncianteId()).orElse(null))")
+    public abstract Pet toEntity(RegisterPetDTO registerPetDTO);
 
-     @Mapping(target = "imagens", ignore = true)
-     @Mapping(target = "anunciante", expression = "java( usuarioRepository.findById(registerPetDTO.anuncianteId()).orElse(null) )")
-     public abstract Pet toEntity(RegisterPetDTO registerPetDTO);
-
-     @Mapping(source = "anunciante.id", target = "anuncianteId")
-     public abstract ResponsePetDTO toResponseDTO(Pet pet);
-
-     @Mapping(target = "imagens", ignore = true)
-     @Mapping(target = "imagensMantidas", ignore = true)
-     @Mapping(source = "anunciante.id", target = "anuncianteId")
-     public abstract RegisterPetDTO toRegisterDTO(Pet pet);
+    @Mapping(source = "anunciante.id", target = "anuncianteId")
+    public abstract ResponsePetDTO toResponseDTO(Pet pet);
 }

@@ -1,20 +1,20 @@
 package kawe.vk.me_audota.service;
 
-import kawe.vk.me_audota.dto.ResponsePetDTO;
 import kawe.vk.me_audota.dto.RegisterPetDTO;
+import kawe.vk.me_audota.dto.ResponsePetDTO;
 import kawe.vk.me_audota.mapper.PetMapper;
 import kawe.vk.me_audota.model.Pet;
 import kawe.vk.me_audota.repository.PetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -24,75 +24,56 @@ public class PetService {
     private final PetImagemService petImagemService;
     private final PetMapper petMapper;
 
-    public Optional<ResponsePetDTO> findById(Long id) {
-        var pet = petRepository.findById(id);
-        if (pet.isPresent()) {
-            return pet.map(petMapper::toResponseDTO);
-        } else {
-            throw new IllegalArgumentException("Pet com ID " + id + " não existe");
-        }
+    public ResponsePetDTO findById(Long id) {
+        return petRepository.findById(id)
+                .map(petMapper::toResponseDTO)
+                .orElseThrow(() -> new NoSuchElementException("Pet com ID " + id + " não existe"));
     }
 
-    public Page<ResponsePetDTO> findAll(Integer page, Integer size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Pet> result = petRepository.findAll(pageable);
-        return result.map(petMapper::toResponseDTO);
+    public Page<ResponsePetDTO> findAll(int page, int size) {
+        return petRepository.findAll(PageRequest.of(page, size))
+                .map(petMapper::toResponseDTO);
     }
 
-    public Optional<Pet> create(RegisterPetDTO registerPetDTO) {
-        var pet = petMapper.toEntity(registerPetDTO);
-        pet.setImagens(petImagemService.uploadImagens(registerPetDTO.imagens()));
-        //adicionar validate
-        return Optional.of(petRepository.save(pet));
+    public Pet create(RegisterPetDTO dto) {
+        Pet pet = petMapper.toEntity(dto);
+        pet.setImagens(petImagemService.uploadImagens(dto.imagens()));
+        return petRepository.save(pet);
     }
 
-    public Optional<ResponsePetDTO> update(Long id, RegisterPetDTO registerPetDTO) {
-        var pet = petRepository.findById(id);
-        if (pet.isPresent()) {
-            Pet petToUpdate = pet.get();
-            petToUpdate.setNome(registerPetDTO.nome());
-            petToUpdate.setDescricao(registerPetDTO.descricao());
-            petToUpdate.setIdadeMes(registerPetDTO.idadeMes());
-            petToUpdate.setIdadeAno(registerPetDTO.idadeAno());
-            petToUpdate.setEspecie(registerPetDTO.especie());
-            petToUpdate.setCor(registerPetDTO.cor());
-            petToUpdate.setSexo(registerPetDTO.sexo());
-            petToUpdate.setStatus(registerPetDTO.status());
+    public ResponsePetDTO update(Long id, RegisterPetDTO dto) {
+        Pet pet = petRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Pet com ID " + id + " não existe"));
 
-            List<String> imagensMantidas = resolveImagensMantidas(petToUpdate.getImagens(), registerPetDTO.imagensMantidas());
-            List<String> novasImagens = petImagemService.uploadImagens(registerPetDTO.imagens());
+        pet.setNome(dto.nome());
+        pet.setDescricao(dto.descricao());
+        pet.setIdadeMes(dto.idadeMes());
+        pet.setIdadeAno(dto.idadeAno());
+        pet.setEspecie(dto.especie());
+        pet.setCor(dto.cor());
+        pet.setSexo(dto.sexo());
+        pet.setStatus(dto.status());
+        pet.setImagens(mergeImagens(pet.getImagens(), dto.imagensMantidas(), dto.imagens()));
 
-            List<String> imagensAtualizadas = new ArrayList<>(imagensMantidas);
-            imagensAtualizadas.addAll(novasImagens);
-            petToUpdate.setImagens(imagensAtualizadas);
-
-            Pet petUpdated = petRepository.save(petToUpdate);
-            return Optional.of(petMapper.toResponseDTO(petUpdated));
-        } else {
-            throw new IllegalArgumentException("Pet com ID " + id + " não existe");
-        }
+        return petMapper.toResponseDTO(petRepository.save(pet));
     }
 
     public void delete(Long id) {
-        var pet = petRepository.findById(id);
-        if (pet.isPresent()) {
-            petRepository.delete(pet.get());
-        } else {
-            throw new IllegalArgumentException("Pet com ID " + id + " não existe");
-        }
+        Pet pet = petRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Pet com ID " + id + " não existe"));
+        petRepository.delete(pet);
     }
 
-    private List<String> resolveImagensMantidas(List<String> imagensAtuais, List<String> imagensMantidas) {
-        List<String> imagensSeguras = imagensAtuais == null
-                ? Collections.emptyList()
-                : imagensAtuais;
+    private List<String> mergeImagens(List<String> atuais, List<String> mantidas, List<MultipartFile> novas
+    ) {
+        List<String> resultado = new ArrayList<>();
 
-        if (imagensMantidas == null || imagensMantidas.isEmpty()) {
-            return Collections.emptyList();
+        if (mantidas != null && !mantidas.isEmpty()) {
+            List<String> base = atuais != null ? atuais : Collections.emptyList();
+            mantidas.stream().filter(base::contains).forEach(resultado::add);
         }
 
-        return imagensMantidas.stream()
-                .filter(imagensSeguras::contains)
-                .toList();
+        resultado.addAll(petImagemService.uploadImagens(novas));
+        return resultado;
     }
 }
