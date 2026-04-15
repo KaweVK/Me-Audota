@@ -22,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-    private static final String JWT_COOKIE_NAME = "__cf_bm";
+    private static final String JWT_COOKIE_NAME = "jwt";
     private static final int TOKEN_DURATION_SECONDS = 2 * 60 * 60;
 
     private final AuthenticationManager authenticationManager;
