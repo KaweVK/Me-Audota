@@ -3,7 +3,7 @@ import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 export class ApiError extends Error {
-  status: number
+  readonly status: number
 
   constructor(message: string, status: number) {
     super(message)
@@ -12,77 +12,92 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Cliente Axios base.
+ * Content-Type NÃO está nos defaults globais para permitir que o axios
+ * detecte automaticamente FormData e defina multipart/form-data com boundary.
+ * JSON requests definem o header manualmente via campo `json` do helper `request`.
+ */
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
+    Accept: 'application/json',
   },
 })
 
+// ---------------------------------------------------------------------------
+// Tipos
+// ---------------------------------------------------------------------------
+
+interface RequestOptions extends Omit<AxiosRequestConfig, 'url' | 'data'> {
+  /** Corpo JSON — define Content-Type: application/json automaticamente */
+  json?: unknown
+  /** Corpo genérico (FormData, etc.) — Content-Type inferido pelo axios */
+  data?: FormData | unknown
+}
+
+// ---------------------------------------------------------------------------
+// Extração de mensagem de erro
+// ---------------------------------------------------------------------------
+
+const STATUS_MESSAGES: Record<number, string> = {
+  401: 'A sua sessão expirou. Entre novamente para continuar.',
+  403: 'Não tem permissão para concluir esta ação.',
+  404: 'Recurso não encontrado.',
+}
+
 const extractErrorMessage = (error: AxiosError): string => {
   const status = error.response?.status
-  const data = error.response?.data as Record<string, unknown> | undefined | string
+  if (status && STATUS_MESSAGES[status]) return STATUS_MESSAGES[status]
 
-  if (status === 401) {
-    return 'A sua sessão expirou. Entre novamente para continuar.'
-  }
-
-  if (status === 403) {
-    return 'Não tem permissão para concluir esta ação.'
-  }
-
-  if (status === 404) {
-    return 'Recurso não encontrado.'
-  }
-
-  if (data) {
-    if (typeof data === 'string' && data.trim().length > 0) return data
-    if (typeof data === 'object') {
-      const message = data.message || data.error || data.details
-      if (typeof message === 'string' && message.trim().length > 0) {
-        return message
-      }
-    }
+  const data = error.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const obj = data as Record<string, unknown>
+    const message = obj.message ?? obj.error ?? obj.details
+    if (typeof message === 'string' && message.trim()) return message
   }
 
   return 'Não foi possível concluir o pedido agora.'
 }
 
-interface RequestOptions extends Omit<AxiosRequestConfig, 'url' | 'data'> {
-  json?: unknown
-}
+// ---------------------------------------------------------------------------
+// Helper principal
+// ---------------------------------------------------------------------------
 
 export const request = async <T>(
   path: string,
-  { json, method = 'GET', ...rest }: RequestOptions = {},
+  { json, data, method = 'GET', headers, ...rest }: RequestOptions = {},
 ): Promise<T> => {
-  try {
-    const response = await apiClient.request<T>({
+  const isJson = json !== undefined
+  const body = isJson ? json : data
+
+  const response = await apiClient
+    .request<T>({
       url: path,
       method,
-      data: json,
+      data: body,
+      // Apenas define Content-Type para JSON; FormData recebe o header do axios
+      headers: isJson
+        ? { 'Content-Type': 'application/json', ...headers }
+        : headers,
       ...rest,
     })
+    .catch((error: unknown) => {
+      if (axios.isAxiosError(error)) {
+        throw new ApiError(extractErrorMessage(error), error.response?.status ?? 500)
+      }
+      throw new ApiError('Ocorreu um erro inesperado.', 500)
+    })
 
-    if (response.status === 204) {
-      return undefined as T
-    }
+  if (response.status === 204) return undefined as T
 
-    const payload = response.data as any
-    if (payload && typeof payload === 'object' && 'value' in payload) {
-      return payload.value as T
-    }
-
-    return response.data
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status ?? 500
-      const message = extractErrorMessage(error)
-      throw new ApiError(message, status)
-    }
-    
-    throw new ApiError('Ocorreu um erro inesperado.', 500)
+  // Suporte legado a respostas `{ value: T }` do Spring (Optional<T> serializado)
+  const payload = response.data as Record<string, unknown> | null
+  if (payload && typeof payload === 'object' && 'value' in payload) {
+    return payload.value as T
   }
+
+  return response.data
 }

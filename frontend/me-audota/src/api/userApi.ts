@@ -2,46 +2,37 @@ import type { PageResponse } from '../types/pet'
 import type { CreateUserPayload, UpdateUserPayload, User } from '../types/user'
 import { request } from './http'
 
-const parseNumber = (value: unknown, fallback = 0) => {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : fallback
+// ---------------------------------------------------------------------------
+// Parsing helpers
+// ---------------------------------------------------------------------------
+
+const parseNumber = (value: unknown, fallback = 0): number => {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : fallback
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
-const parseIdList = (value: unknown) => {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value
-    .map((item) => Number(item))
-    .filter((item) => Number.isFinite(item) && item > 0)
-}
+const parseIdList = (value: unknown): number[] =>
+  Array.isArray(value)
+    ? value.map(Number).filter((n) => Number.isFinite(n) && n > 0)
+    : []
 
 const toUser = (payload: unknown): User => {
-  if (!isRecord(payload)) {
-    throw new Error('Resposta de usuario invalida.')
-  }
-
+  if (!isRecord(payload)) throw new Error('Resposta de usuário inválida.')
   return {
-    id: parseNumber(payload.id, 0),
-    nome: typeof payload.nome === 'string' ? payload.nome : 'Usuario sem nome',
+    id: parseNumber(payload.id),
+    nome: typeof payload.nome === 'string' ? payload.nome : 'Usuário sem nome',
     email: typeof payload.email === 'string' ? payload.email : '',
     telefone: typeof payload.telefone === 'string' ? payload.telefone : '',
     petsAnunciadosIds: parseIdList(payload.petsAnunciadosIds),
   }
 }
 
-const toPageResponse = (
-  payload: unknown,
-  page: number,
-  size: number,
-): PageResponse<User> => {
+const toPageResponse = (payload: unknown, page: number, size: number): PageResponse<User> => {
   const data = isRecord(payload) ? payload : {}
   const content = Array.isArray(data.content) ? data.content : []
-
   return {
     content: content.map(toUser),
     totalPages: parseNumber(data.totalPages, 1),
@@ -53,85 +44,63 @@ const toPageResponse = (
   }
 }
 
-const buildUserFormData = (payload: CreateUserPayload | UpdateUserPayload) => {
-  const formData = new FormData()
-  formData.append('nome', payload.nome.trim())
-  formData.append('email', payload.email.trim())
-  formData.append('senha', payload.senha)
-  formData.append('telefone', payload.telefone.trim())
-  return formData
+// ---------------------------------------------------------------------------
+// FormData builder
+// ---------------------------------------------------------------------------
+
+const buildUserFormData = (payload: CreateUserPayload | UpdateUserPayload): FormData => {
+  const fd = new FormData()
+  fd.append('nome', payload.nome.trim())
+  fd.append('email', payload.email.trim())
+  fd.append('senha', payload.senha)
+  fd.append('telefone', payload.telefone.trim())
+  return fd
 }
 
-const normalizeEmail = (value: string) => value.trim().toLowerCase()
+// ---------------------------------------------------------------------------
+// API
+// ---------------------------------------------------------------------------
 
-export const getUsers = async (
-  page = 0,
-  size = 20,
-): Promise<PageResponse<User>> => {
+export const getUsers = async (page = 0, size = 20): Promise<PageResponse<User>> => {
   const response = await request<unknown>(`/usuarios/?page=${page}&size=${size}`)
   return toPageResponse(response, page, size)
 }
 
-export const getAllUsers = async () => {
-  const pageSize = 100
-  const firstPage = await getUsers(0, pageSize)
+export const getAllUsers = async (): Promise<User[]> => {
+  const PAGE_SIZE = 100
+  const first = await getUsers(0, PAGE_SIZE)
+  if (first.totalPages <= 1) return first.content
 
-  if (firstPage.totalPages <= 1) {
-    return firstPage.content
-  }
-
-  const remainingPages = await Promise.all(
-    Array.from({ length: firstPage.totalPages - 1 }, (_, index) =>
-      getUsers(index + 1, pageSize),
-    ),
+  const rest = await Promise.all(
+    Array.from({ length: first.totalPages - 1 }, (_, i) => getUsers(i + 1, PAGE_SIZE)),
   )
-
-  return [
-    ...firstPage.content,
-    ...remainingPages.flatMap((pageData) => pageData.content),
-  ]
+  return [...first.content, ...rest.flatMap((p) => p.content)]
 }
 
-export const getUserByEmail = async (email: string) => {
-  const normalizedEmail = normalizeEmail(email)
-  const users = await getAllUsers()
-  const user = users.find(
-    (candidate) => normalizeEmail(candidate.email) === normalizedEmail,
-  )
-
-  if (!user) {
-    throw new Error('Nao foi possivel identificar o usuario autenticado.')
-  }
-
-  return user
-}
-
-export const getUserById = async (id: number) => {
+export const getUserById = async (id: number): Promise<User> => {
   const response = await request<unknown>(`/usuarios/${id}`)
   return toUser(response)
 }
 
-export const createUser = async (payload: CreateUserPayload) => {
+export const createUser = async (payload: CreateUserPayload): Promise<User> => {
+  // CORRIGIDO: era `body:` (campo inexistente em RequestOptions → ignorado silenciosamente)
+  // Agora usa `data:` para enviar o FormData corretamente
   const response = await request<unknown>('/usuarios/', {
     method: 'POST',
-    auth: false,
-    body: buildUserFormData(payload),
+    data: buildUserFormData(payload),
   })
-
   return toUser(response)
 }
 
-export const updateUser = async (id: number, payload: UpdateUserPayload) => {
+export const updateUser = async (id: number, payload: UpdateUserPayload): Promise<User> => {
+  // CORRIGIDO: idem
   const response = await request<unknown>(`/usuarios/${id}`, {
     method: 'PUT',
-    body: buildUserFormData(payload),
+    data: buildUserFormData(payload),
   })
-
   return toUser(response)
 }
 
-export const deleteUser = async (id: number) => {
-  await request<void>(`/usuarios/${id}`, {
-    method: 'DELETE',
-  })
+export const deleteUser = async (id: number): Promise<void> => {
+  await request<void>(`/usuarios/${id}`, { method: 'DELETE' })
 }

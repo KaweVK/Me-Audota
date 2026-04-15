@@ -1,105 +1,78 @@
 import type { CreatePetPayload, PageResponse, Pet, UpdatePetPayload } from '../types/pet'
 import { request } from './http'
 
-const parseNumber = (value: unknown, fallback = 0) => {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : fallback
+// ---------------------------------------------------------------------------
+// Parsing helpers
+// ---------------------------------------------------------------------------
+
+const parseNumber = (value: unknown, fallback = 0): number => {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : fallback
 }
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
-const parseImages = (value: unknown): string[] => {
-  if (!Array.isArray(value)) {
-    return []
+const parseImages = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+
+const parseAnuncianteId = (payload: Record<string, unknown>): number => {
+  if ('anuncianteId' in payload) return parseNumber(payload.anuncianteId)
+  if (isObject(payload.anunciante) && 'id' in payload.anunciante) {
+    return parseNumber(payload.anunciante.id)
   }
-
-  return value.filter((item): item is string => typeof item === 'string')
-}
-
-const parseAnuncianteId = (payload: Record<string, unknown>) => {
-  if ('anuncianteId' in payload) {
-    return parseNumber(payload.anuncianteId, 0)
-  }
-
-  if (
-    'anunciante' in payload &&
-    isObject(payload.anunciante) &&
-    'id' in payload.anunciante
-  ) {
-    return parseNumber(payload.anunciante.id, 0)
-  }
-
   return 0
 }
 
 const toPet = (payload: unknown): Pet => {
-  if (!isObject(payload)) {
-    throw new Error('Resposta de pet invalida.')
-  }
-
+  if (!isObject(payload)) throw new Error('Resposta de pet inválida.')
   return {
-    id: parseNumber(payload.id, 0),
+    id: parseNumber(payload.id),
     nome: typeof payload.nome === 'string' ? payload.nome : 'Pet sem nome',
     imagens: parseImages(payload.imagens),
     descricao: typeof payload.descricao === 'string' ? payload.descricao : '',
-    idadeMes: parseNumber(payload.idadeMes, 0),
-    idadeAno: parseNumber(payload.idadeAno, 0),
-    especie:
-      typeof payload.especie === 'string' ? payload.especie : 'CACHORRO',
-    cor: typeof payload.cor === 'string' ? payload.cor : 'Nao informado',
+    idadeMes: parseNumber(payload.idadeMes),
+    idadeAno: parseNumber(payload.idadeAno),
+    especie: typeof payload.especie === 'string' ? payload.especie : 'CACHORRO',
+    cor: typeof payload.cor === 'string' ? payload.cor : 'Não informado',
     sexo: typeof payload.sexo === 'string' ? payload.sexo : undefined,
     status: typeof payload.status === 'string' ? payload.status : 'DISPONIVEL',
     anuncianteId: parseAnuncianteId(payload),
   }
 }
 
-const appendOptionalField = (
-  formData: FormData,
-  name: string,
-  value: string | undefined,
-) => {
-  if (value && value.trim().length > 0) {
-    formData.append(name, value.trim())
-  }
-}
+// ---------------------------------------------------------------------------
+// FormData builder
+// ---------------------------------------------------------------------------
 
-const buildPetFormData = (
-  payload: CreatePetPayload | UpdatePetPayload,
-): FormData => {
-  const formData = new FormData()
+const buildPetFormData = (payload: CreatePetPayload | UpdatePetPayload): FormData => {
+  const fd = new FormData()
+  fd.append('nome', payload.nome.trim())
+  fd.append('descricao', payload.descricao.trim())
+  fd.append('idadeMes', String(payload.idadeMes))
+  fd.append('idadeAno', String(payload.idadeAno))
+  fd.append('especie', payload.especie)
+  fd.append('cor', payload.cor.trim())
+  fd.append('status', payload.status)
+  fd.append('anuncianteId', String(payload.anuncianteId))
+  if (payload.sexo?.trim()) fd.append('sexo', payload.sexo.trim())
 
-  formData.append('nome', payload.nome.trim())
-  formData.append('descricao', payload.descricao.trim())
-  formData.append('idadeMes', String(payload.idadeMes))
-  formData.append('idadeAno', String(payload.idadeAno))
-  formData.append('especie', payload.especie)
-  formData.append('cor', payload.cor.trim())
-  formData.append('status', payload.status)
-  formData.append('anuncianteId', String(payload.anuncianteId))
-  appendOptionalField(formData, 'sexo', payload.sexo)
-
-  payload.imagens.forEach((imagem) => {
-    formData.append('imagens', imagem)
-  })
+  payload.imagens.forEach((img) => fd.append('imagens', img))
 
   if ('imagensMantidas' in payload) {
-    payload.imagensMantidas.forEach((imagemUrl) => {
-      formData.append('imagensMantidas', imagemUrl)
-    })
+    payload.imagensMantidas.forEach((url) => fd.append('imagensMantidas', url))
   }
 
-  return formData
+  return fd
 }
 
-export const getPets = async (
-  page = 0,
-  size = 12,
-): Promise<PageResponse<Pet>> => {
+// ---------------------------------------------------------------------------
+// API
+// ---------------------------------------------------------------------------
+
+export const getPets = async (page = 0, size = 12): Promise<PageResponse<Pet>> => {
   const payload = await request<Record<string, unknown>>(`/pet/?page=${page}&size=${size}`)
-
   const items = Array.isArray(payload.content) ? payload.content : []
-
   return {
     content: items.map(toPet),
     totalPages: parseNumber(payload.totalPages, 1),
@@ -112,23 +85,14 @@ export const getPets = async (
 }
 
 export const getAllPets = async (): Promise<Pet[]> => {
-  const pageSize = 100
-  const firstPage = await getPets(0, pageSize)
+  const PAGE_SIZE = 100
+  const first = await getPets(0, PAGE_SIZE)
+  if (first.totalPages <= 1) return first.content
 
-  if (firstPage.totalPages <= 1) {
-    return firstPage.content
-  }
-
-  const remainingPages = await Promise.all(
-    Array.from({ length: firstPage.totalPages - 1 }, (_, index) =>
-      getPets(index + 1, pageSize),
-    ),
+  const rest = await Promise.all(
+    Array.from({ length: first.totalPages - 1 }, (_, i) => getPets(i + 1, PAGE_SIZE)),
   )
-
-  return [
-    ...firstPage.content,
-    ...remainingPages.flatMap((pageData) => pageData.content),
-  ]
+  return [...first.content, ...rest.flatMap((p) => p.content)]
 }
 
 export const getPetById = async (id: number): Promise<Pet> => {
@@ -137,28 +101,23 @@ export const getPetById = async (id: number): Promise<Pet> => {
 }
 
 export const createPet = async (payload: CreatePetPayload): Promise<Pet> => {
-  const createdPet = await request<unknown>('/pet/', {
+  // CORRIGIDO: usa `data` (não `json`) para que o axios defina multipart/form-data
+  const created = await request<unknown>('/pet/', {
     method: 'POST',
-    json: buildPetFormData(payload),
+    data: buildPetFormData(payload),
   })
-
-  return toPet(createdPet)
+  return toPet(created)
 }
 
-export const updatePet = async (
-  id: number,
-  payload: UpdatePetPayload,
-): Promise<Pet> => {
-  const updatedPet = await request<unknown>(`/pet/${id}`, {
+export const updatePet = async (id: number, payload: UpdatePetPayload): Promise<Pet> => {
+  // CORRIGIDO: idem
+  const updated = await request<unknown>(`/pet/${id}`, {
     method: 'PUT',
-    json: buildPetFormData(payload),
+    data: buildPetFormData(payload),
   })
-
-  return toPet(updatedPet)
+  return toPet(updated)
 }
 
-export const deletePet = async (id: number) => {
-  await request<void>(`/pet/${id}`, {
-    method: 'DELETE',
-  })
+export const deletePet = async (id: number): Promise<void> => {
+  await request<void>(`/pet/${id}`, { method: 'DELETE' })
 }

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getAllPets } from '../../api/petApi'
+import { useAsync } from '../../hooks/useAsync'
 import type { Pet } from '../../types/pet'
 import { normalizeText } from '../../utils/text'
 import { PetCard } from './PetCard'
@@ -20,51 +21,25 @@ export const PetCollectionPage = ({
   filter,
   title,
 }: PetCollectionPageProps) => {
-  const [pets, setPets] = useState<Pet[]>([])
   const [search, setSearch] = useState('')
-  const [reloadIndex, setReloadIndex] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: allPets, isLoading, error, retry } = useAsync(getAllPets, [])
 
-  useEffect(() => {
-    const loadPets = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const response = await getAllPets()
-        setPets(response)
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Não foi possível carregar os pets.',
-        )
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    void loadPets()
-  }, [reloadIndex])
-
-  const scopedPets = useMemo(() => pets.filter(filter), [filter, pets])
+  const scopedPets = useMemo(
+    () => (allPets ?? []).filter(filter),
+    [allPets, filter],
+  )
 
   const filteredPets = useMemo(() => {
     const term = normalizeText(search)
-
-    if (term.length === 0) {
-      return scopedPets
-    }
+    if (!term) return scopedPets
 
     return scopedPets.filter((pet) => {
-      const searchableContent = normalizeText(
+      const haystack = normalizeText(
         [pet.nome, pet.descricao, pet.cor, pet.especie, pet.status]
           .filter(Boolean)
           .join(' '),
       )
-
-      return searchableContent.includes(term)
+      return haystack.includes(term)
     })
   }, [scopedPets, search])
 
@@ -98,71 +73,66 @@ export const PetCollectionPage = ({
             <input
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Nome, especie, cor ou status"
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Nome, espécie, cor ou status"
               className="rounded-[1rem] border border-[var(--brand-line)] bg-[var(--brand-surface)] px-4 py-3 text-sm font-medium text-[var(--brand-title)] outline-none transition-shadow focus:ring-2 focus:ring-[rgba(86,110,42,0.18)]"
             />
           </label>
-
           <p className="text-sm font-semibold text-[var(--brand-text-soft)]">
             {filteredPets.length} de {scopedPets.length} pets exibidos
           </p>
         </div>
       </header>
 
-      {error ? (
+      {error && (
         <div className="rounded-[1.5rem] border border-[rgba(130,75,49,0.25)] bg-[rgba(130,75,49,0.08)] p-5">
-          <p className="text-sm font-semibold text-[var(--brand-title)]">
-            {error}
-          </p>
+          <p className="text-sm font-semibold text-[var(--brand-title)]">{error}</p>
           <button
             type="button"
-            onClick={() => setReloadIndex((current) => current + 1)}
+            onClick={retry}
             className="mt-4 rounded-full bg-[var(--brand-title)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--brand-highlight-strong)]"
           >
             Tentar novamente
           </button>
         </div>
-      ) : null}
+      )}
 
-      {isLoading ? (
+      {isLoading && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <div
-              key={index}
+              key={i}
               className="h-80 animate-pulse rounded-[1.75rem] border border-[var(--brand-line)] bg-white/70"
             />
           ))}
         </div>
-      ) : null}
+      )}
 
-      {!isLoading && !error && scopedPets.length === 0 ? (
+      {!isLoading && !error && scopedPets.length === 0 && (
         <article className="rounded-[2rem] border border-[var(--brand-line)] bg-white p-8 text-center">
           <h2 className="text-3xl text-[var(--brand-title)]">{emptyTitle}</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--brand-text-soft)]">
             {emptyDescription}
           </p>
         </article>
-      ) : null}
+      )}
 
-      {!isLoading && !error && scopedPets.length > 0 && filteredPets.length === 0 ? (
+      {!isLoading && !error && scopedPets.length > 0 && filteredPets.length === 0 && (
         <article className="rounded-[2rem] border border-[var(--brand-line)] bg-white p-8 text-center">
-          <h2 className="text-3xl text-[var(--brand-title)]">
-            Nenhum resultado encontrado
-          </h2>
+          <h2 className="text-3xl text-[var(--brand-title)]">Nenhum resultado encontrado</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--brand-text-soft)]">
             Tente outro termo para continuar a busca.
           </p>
         </article>
-      ) : null}
+      )}
 
-      {!isLoading && !error && filteredPets.length > 0 ? (
+      {!isLoading && !error && filteredPets.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredPets.map((pet) => (
             <PetCard key={pet.id} pet={pet} />
           ))}
         </div>
-      ) : null}
+      )}
     </section>
   )
 }
