@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { ROUTES } from '../routes'
 import { useAuth } from './useAuth'
 
 export const PublicOnlyRoute = () => {
@@ -9,7 +10,9 @@ export const PublicOnlyRoute = () => {
   }
 
   if (isAuthenticated) {
-    const redirectTarget = currentUser ? `/usuarios/${currentUser.id}` : '/pets'
+    const redirectTarget = currentUser
+      ? `${ROUTES.USERS}/${currentUser.id}`
+      : ROUTES.PETS
     return <Navigate to={redirectTarget} replace />
   }
 

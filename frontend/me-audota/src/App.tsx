@@ -14,28 +14,29 @@ import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
 import { UserDetailsPage } from './pages/UserDetailsPage'
 import { UsersPage } from './pages/UsersPage'
+import { ROUTES } from './routes'
 
 function App() {
   return (
     <Routes>
       <Route element={<PublicOnlyRoute />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/cadastro" element={<RegisterPage />} />
+        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+        <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
       </Route>
 
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/pets" replace />} />
-          <Route path="/pets" element={<PetsPage />} />
-          <Route path="/pets/novo" element={<CreatePetPage />} />
-          <Route path="/pets/:id" element={<PetDetailsPage />} />
-          <Route path="/pets/:id/editar" element={<EditPetPage />} />
-          <Route path="/adotados" element={<PetsAdotadosPage />} />
-          <Route path="/usuarios" element={<UsersPage />} />
-          <Route path="/usuarios/:id" element={<UserDetailsPage />} />
-          <Route path="/usuarios/:id/editar" element={<EditUserPage />} />
-          <Route path="/perfil" element={<ProfilePage />} />
-          <Route path="/animais" element={<Navigate to="/pets" replace />} />
+          <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.PETS} replace />} />
+          <Route path={ROUTES.PETS} element={<PetsPage />} />
+          <Route path={ROUTES.NEW_PET} element={<CreatePetPage />} />
+          <Route path={ROUTES.PET_DETAILS} element={<PetDetailsPage />} />
+          <Route path={ROUTES.PET_EDIT} element={<EditPetPage />} />
+          <Route path={ROUTES.ADOPTED_PETS} element={<PetsAdotadosPage />} />
+          <Route path={ROUTES.USERS} element={<UsersPage />} />
+          <Route path={ROUTES.USER_DETAILS} element={<UserDetailsPage />} />
+          <Route path={ROUTES.USER_EDIT} element={<EditUserPage />} />
+          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+          <Route path={ROUTES.LEGACY_PETS} element={<Navigate to={ROUTES.PETS} replace />} />
         </Route>
       </Route>
 

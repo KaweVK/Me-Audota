@@ -1,0 +1,15 @@
+export const ROUTES = {
+  HOME: '/',
+  LOGIN: '/login',
+  REGISTER: '/cadastro',
+  PETS: '/pets',
+  NEW_PET: '/pets/novo',
+  PET_DETAILS: '/pets/:id',
+  PET_EDIT: '/pets/:id/editar',
+  ADOPTED_PETS: '/adotados',
+  USERS: '/usuarios',
+  USER_DETAILS: '/usuarios/:id',
+  USER_EDIT: '/usuarios/:id/editar',
+  PROFILE: '/perfil',
+  LEGACY_PETS: '/animais',
+} as const

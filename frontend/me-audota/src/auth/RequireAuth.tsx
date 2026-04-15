@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { ROUTES } from '../routes'
 import { useAuth } from './useAuth'
 
 export const RequireAuth = () => {
@@ -24,7 +25,7 @@ export const RequireAuth = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+    return <Navigate to={ROUTES.LOGIN} replace state={{ from: location }} />
   }
 
   return <Outlet />

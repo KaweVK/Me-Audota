@@ -7,6 +7,7 @@ import {
   type UserFormInitialValues,
 } from '../components/users/UserForm'
 import { useAuth } from '../auth/useAuth'
+import { ROUTES } from '../routes'
 import type { CreateUserPayload } from '../types/user'
 
 const initialValues: UserFormInitialValues = {
@@ -32,7 +33,7 @@ export const RegisterPage = () => {
         email: payload.email,
         senha: payload.senha,
       })
-      navigate('/pets', { replace: true })
+      navigate(ROUTES.PETS, { replace: true })
     } catch (err) {
       setError(
         err instanceof Error
@@ -52,7 +53,7 @@ export const RegisterPage = () => {
         <p>
           Já tem conta?{' '}
           <Link
-            to="/login"
+            to={ROUTES.LOGIN}
             className="font-semibold text-[var(--brand-highlight)]"
           >
             Fazer login
@@ -61,7 +62,7 @@ export const RegisterPage = () => {
       }
     >
       <UserForm
-        backTo="/login"
+        backTo={ROUTES.LOGIN}
         backLabel="Voltar ao login"
         error={error}
         initialValues={initialValues}

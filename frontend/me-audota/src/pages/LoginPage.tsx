@@ -2,6 +2,22 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthCard } from '../components/auth/AuthCard'
 import { useAuth } from '../auth/useAuth'
+import { ROUTES } from '../routes'
+
+interface LoginLocationState {
+  from?: {
+    pathname?: string
+  }
+}
+
+const resolveRedirectPath = (state: unknown): string => {
+  if (typeof state !== 'object' || state === null) {
+    return ROUTES.PETS
+  }
+
+  const locationState = state as LoginLocationState
+  return locationState.from?.pathname ?? ROUTES.PETS
+}
 
 export const LoginPage = () => {
   const navigate = useNavigate()
@@ -13,16 +29,7 @@ export const LoginPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const destination =
-    typeof location.state === 'object' &&
-    location.state !== null &&
-    'from' in location.state &&
-    typeof location.state.from === 'object' &&
-    location.state.from !== null &&
-    'pathname' in location.state.from &&
-    typeof location.state.from.pathname === 'string'
-      ? location.state.from.pathname
-      : '/pets'
+  const destination = resolveRedirectPath(location.state)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -55,7 +62,7 @@ export const LoginPage = () => {
         <p>
           Ainda não tem conta?{' '}
           <Link
-            to="/cadastro"
+            to={ROUTES.REGISTER}
             className="font-semibold text-[var(--brand-highlight)]"
           >
             Criar usuário
