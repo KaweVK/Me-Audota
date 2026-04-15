@@ -1,6 +1,11 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+let unauthorizedHandler: (() => void) | null = null
+
+export const registerUnauthorizedHandler = (handler: (() => void) | null) => {
+  unauthorizedHandler = handler
+}
 
 export class ApiError extends Error {
   readonly status: number
@@ -86,7 +91,11 @@ export const request = async <T>(
     })
     .catch((error: unknown) => {
       if (axios.isAxiosError(error)) {
-        throw new ApiError(extractErrorMessage(error), error.response?.status ?? 500)
+        const status = error.response?.status ?? 500
+        if (status === 401) {
+          unauthorizedHandler?.()
+        }
+        throw new ApiError(extractErrorMessage(error), status)
       }
       throw new ApiError('Ocorreu um erro inesperado.', 500)
     })

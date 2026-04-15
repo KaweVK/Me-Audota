@@ -20,3 +20,7 @@ export const loginRequest = async (payload: LoginPayload): Promise<AuthSessionSn
 export const logoutRequest = async () => {
   await request('/login/logout', { method: 'POST' })
 }
+
+export const readCurrentSession = async (): Promise<AuthSessionSnapshot> => {
+  return request<AuthSessionSnapshot>('/login/me')
+}

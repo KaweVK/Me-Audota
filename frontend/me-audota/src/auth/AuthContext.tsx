@@ -5,93 +5,82 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
-import { loginRequest, logoutRequest } from '../api/authApi'
+import { loginRequest, logoutRequest, readCurrentSession } from '../api/authApi'
+import { registerUnauthorizedHandler } from '../api/http'
 import { getUserById } from '../api/userApi'
 import type { LoginPayload } from '../types/auth'
-import {
-  clearStoredSession,
-  persistSession,
-  readStoredSession,
-} from './authStorage'
 import type { User } from '../types/user'
 import { AuthContext, type AuthContextValue } from './sessionContext'
 
-const getInitialSession = () => readStoredSession()
-
 export const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [session, setSession] = useState(getInitialSession)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(Boolean(session))
+  const [isLoading, setIsLoading] = useState(true)
 
-  const logout = useCallback(async () => {
-    try {
-      await logoutRequest()
-    } catch (e) {
-      console.error(e)
-    }
-    clearStoredSession()
-    setSession(null)
+  const clearAuthState = useCallback(() => {
     setCurrentUser(null)
     setIsLoading(false)
   }, [])
 
-  const refreshCurrentUser = useCallback(async () => {
-    if (!session) {
-      setCurrentUser(null)
-      setIsLoading(false)
-      return
+  const logout = useCallback(async () => {
+    try {
+      await logoutRequest()
+    } catch (error) {
+      console.error(error)
     }
+    clearAuthState()
+  }, [clearAuthState])
 
+  const refreshCurrentUser = useCallback(async () => {
     setIsLoading(true)
 
     try {
-      const usuario = await getUserById(session.userId)
-      setCurrentUser(usuario)
+      const session = await readCurrentSession()
+      const user = await getUserById(session.userId)
+      setCurrentUser(user)
     } catch {
-      await logout()
+      clearAuthState()
       throw new Error('Não foi possível restaurar sua sessão.')
     } finally {
       setIsLoading(false)
     }
-  }, [logout, session])
+  }, [clearAuthState])
 
   const login = useCallback(async (payload: LoginPayload) => {
     setIsLoading(true)
     try {
       const nextSession = await loginRequest(payload)
-
-      persistSession(nextSession)
-      
-      const usuario = await getUserById(nextSession.userId)
-      setSession(nextSession)
-      setCurrentUser(usuario)
-    } catch (error) {
-      clearStoredSession()
-      throw error
+      const user = await getUserById(nextSession.userId)
+      setCurrentUser(user)
+    } catch (err) {
+      clearAuthState()
+      throw err
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [clearAuthState])
 
   useEffect(() => {
-    if (!session || currentUser) {
-      return
+    registerUnauthorizedHandler(clearAuthState)
+    return () => {
+      registerUnauthorizedHandler(null)
     }
+  }, [clearAuthState])
 
+  useEffect(() => {
     void refreshCurrentUser()
-  }, [currentUser, refreshCurrentUser, session])
+  }, [refreshCurrentUser])
 
   const value = useMemo<AuthContextValue>(
     () => ({
-      authEmail: session?.email ?? null,
+      authEmail: currentUser?.email ?? null,
       currentUser,
-      isAuthenticated: Boolean(session),
+      isAuthenticated: Boolean(currentUser),
       isLoading,
       login,
       logout,
       refreshCurrentUser,
     }),
-    [currentUser, isLoading, login, logout, refreshCurrentUser, session],
+    [currentUser, isLoading, login, logout, refreshCurrentUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

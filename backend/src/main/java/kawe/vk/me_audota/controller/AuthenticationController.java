@@ -8,8 +8,10 @@ import kawe.vk.me_audota.model.Usuario;
 import kawe.vk.me_audota.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +53,15 @@ public class AuthenticationController {
     public ResponseEntity<Void> efetuarLogout(HttpServletResponse response) {
         response.addCookie(buildJwtCookie(null, 0));
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getSessaoAtual(Authentication authentication) {
+        var usuario = (Usuario) authentication.getPrincipal();
+        return ResponseEntity.ok(Map.of(
+                "id", usuario.getId(),
+                "email", usuario.getEmail()
+        ));
     }
 
     private Cookie buildJwtCookie(String value, int maxAge) {
