@@ -5,7 +5,13 @@ import { AuthProvider } from './auth/AuthContext'
 import './index.css'
 import App from './App'
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root')
+
+if (!rootElement) {
+  throw new Error('Root element não encontrado.')
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
