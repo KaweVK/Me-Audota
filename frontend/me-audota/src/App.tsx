@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { AppLayout } from './components/layout/AppLayout'
 import { PublicOnlyRoute } from './auth/PublicOnlyRoute'
 import { RequireAuth } from './auth/RequireAuth'
@@ -18,30 +19,33 @@ import { ROUTES } from './routes'
 
 function App() {
   return (
-    <Routes>
-      <Route element={<PublicOnlyRoute />}>
-        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-        <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
-      </Route>
-
-      <Route element={<RequireAuth />}>
-        <Route element={<AppLayout />}>
-          <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.PETS} replace />} />
-          <Route path={ROUTES.PETS} element={<PetsPage />} />
-          <Route path={ROUTES.NEW_PET} element={<CreatePetPage />} />
-          <Route path={ROUTES.PET_DETAILS} element={<PetDetailsPage />} />
-          <Route path={ROUTES.PET_EDIT} element={<EditPetPage />} />
-          <Route path={ROUTES.ADOPTED_PETS} element={<PetsAdotadosPage />} />
-          <Route path={ROUTES.USERS} element={<UsersPage />} />
-          <Route path={ROUTES.USER_DETAILS} element={<UserDetailsPage />} />
-          <Route path={ROUTES.USER_EDIT} element={<EditUserPage />} />
-          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-          <Route path={ROUTES.LEGACY_PETS} element={<Navigate to={ROUTES.PETS} replace />} />
+    <>
+      <Routes>
+        <Route element={<PublicOnlyRoute />}>
+          <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+          <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
         </Route>
-      </Route>
 
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route element={<RequireAuth />}>
+          <Route element={<AppLayout />}>
+            <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.PETS} replace />} />
+            <Route path={ROUTES.PETS} element={<PetsPage />} />
+            <Route path={ROUTES.NEW_PET} element={<CreatePetPage />} />
+            <Route path={ROUTES.PET_DETAILS} element={<PetDetailsPage />} />
+            <Route path={ROUTES.PET_EDIT} element={<EditPetPage />} />
+            <Route path={ROUTES.ADOPTED_PETS} element={<PetsAdotadosPage />} />
+            <Route path={ROUTES.USERS} element={<UsersPage />} />
+            <Route path={ROUTES.USER_DETAILS} element={<UserDetailsPage />} />
+            <Route path={ROUTES.USER_EDIT} element={<EditUserPage />} />
+            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+            <Route path={ROUTES.LEGACY_PETS} element={<Navigate to={ROUTES.PETS} replace />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+      <Analytics />
+    </>
   )
 }
 
