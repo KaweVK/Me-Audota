@@ -22,5 +22,10 @@ export const logoutRequest = async () => {
 }
 
 export const readCurrentSession = async (): Promise<AuthSessionSnapshot> => {
-  return request<AuthSessionSnapshot>('/login/me')
+  const response = await request<{ id: number; email: string }>('/login/me')
+  
+  return {
+    userId: response.id,
+    email: response.email,
+  }
 }
