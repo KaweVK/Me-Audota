@@ -26,7 +26,7 @@ export const Navbar = () => {
               MeAudota
             </p>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--brand-text-muted)]">
-              Painel de adocao
+              Painel de adoção
             </p>
           </div>
         </Link>
@@ -39,7 +39,7 @@ export const Navbar = () => {
             Adotados
           </NavLink>
           <NavLink to="/usuarios" className={navLinkClassName}>
-            Usuarios
+            Usuários
           </NavLink>
           <NavLink to="/pets/novo" className={navLinkClassName}>
             Novo pet
