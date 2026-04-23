@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import kawe.vk.me_audota.model.enums.Especie;
+import kawe.vk.me_audota.model.enums.PetSexo;
+import kawe.vk.me_audota.model.enums.Role;
 import kawe.vk.me_audota.model.enums.StatusPet;
 
 import java.util.List;
@@ -25,7 +27,7 @@ public record ResponsePetDTO(
         Especie especie,
         @NotNull
         String cor,
-        String sexo,
+        PetSexo sexo,
         @NotNull
         StatusPet status,
         @NotNull

@@ -3,10 +3,13 @@ package kawe.vk.me_audota.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import kawe.vk.me_audota.model.enums.Especie;
+import kawe.vk.me_audota.model.enums.PetSexo;
 import kawe.vk.me_audota.model.enums.StatusPet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -43,13 +46,16 @@ public class Pet {
     private Integer idadeAno;
     @Enumerated(EnumType.STRING)
     @Column(name = "especie", length = 80, nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private Especie especie;
     @Column(name = "cor", nullable = false)
     private String cor;
     @Column(name = "sexo", length = 1)
-    private String sexo;
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private PetSexo sexo;
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 80,  nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private StatusPet status;
     @ManyToOne
     @JsonIgnore
