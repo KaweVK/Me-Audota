@@ -1,7 +1,10 @@
 package kawe.vk.me_audota.model;
 
 import jakarta.persistence.*;
+import kawe.vk.me_audota.model.enums.Role;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -35,6 +38,10 @@ public class Usuario implements UserDetails {
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "anunciante", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pet> petsAnunciados;
+    @Enumerated
+    @Column(name = "role", nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private Role role;
     @CreatedDate
     @Column(name = "register_date", nullable = false)
     private LocalDateTime registerDate;

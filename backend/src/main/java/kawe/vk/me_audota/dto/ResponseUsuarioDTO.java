@@ -3,6 +3,7 @@ package kawe.vk.me_audota.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import kawe.vk.me_audota.model.enums.Role;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public record ResponseUsuarioDTO(
         @Size(min = 1, max = 100)
         @NotBlank
         String telefone,
-        List<Long> petsAnunciadosIds
+        List<Long> petsAnunciadosIds,
+        @NotNull
+        Role role
 ) {
 }

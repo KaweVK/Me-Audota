@@ -4,6 +4,7 @@ import kawe.vk.me_audota.dto.RegisterUsuarioDTO;
 import kawe.vk.me_audota.dto.ResponseUsuarioDTO;
 import kawe.vk.me_audota.mapper.UsuarioMapper;
 import kawe.vk.me_audota.model.Usuario;
+import kawe.vk.me_audota.model.enums.Role;
 import kawe.vk.me_audota.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -46,6 +47,7 @@ public class UsuarioService {
         usuario.setEmail(dto.email());
         usuario.setSenha(passwordEncoder.encode(dto.senha()));
         usuario.setTelefone(dto.telefone());
+        usuario.setRole(dto.role());
 
         return usuarioMapper.toResponseDTO(usuarioRepository.save(usuario));
     }
