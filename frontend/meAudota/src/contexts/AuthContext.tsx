@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
             setCurrentUser(await getUserById(session.userId))
         } catch {
             clearAuth()
+            window.alert('Não foi possível restaurar sua sessão, faça login novamente.')
             throw new Error('Não foi possível restaurar sua sessão.')
         } finally {
             setIsLoading(false)
