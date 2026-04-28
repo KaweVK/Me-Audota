@@ -1,0 +1,78 @@
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+let unauthorizedHandler: (() => void) | null = null
+
+export const registerUnauthorizedHandler = (handler: (() => void) | null) => {
+  unauthorizedHandler = handler
+}
+
+export class ApiError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
+export const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: { Accept: 'application/json' },
+})
+
+interface RequestOptions extends Omit<AxiosRequestConfig, 'url' | 'data'> {
+  json?: unknown
+  data?: FormData | unknown
+}
+
+const STATUS_MESSAGES: Record<number, string> = {
+  401: 'A sua sessão expirou. Entre novamente para continuar.',
+  403: 'Não tem permissão para concluir esta ação.',
+  404: 'Recurso não encontrado.',
+}
+
+const extractErrorMessage = (error: AxiosError): string => {
+  const status = error.response?.status
+  if (status && STATUS_MESSAGES[status]) return STATUS_MESSAGES[status]
+
+  const data = error.response?.data
+  if (typeof data === 'string' && data.trim()) return data
+  if (data && typeof data === 'object') {
+    const { message, error: err, details } = data as Record<string, unknown>
+    const msg = message ?? err ?? details
+    if (typeof msg === 'string' && msg.trim()) return msg
+  }
+
+  return 'Não foi possível concluir o pedido agora.'
+}
+
+export const request = async <T>(
+  path: string,
+  { json, data, method = 'GET', headers, ...rest }: RequestOptions = {},
+): Promise<T> => {
+  const isJson = json !== undefined
+
+  const response = await apiClient
+    .request<T>({
+      url: path,
+      method,
+      data: isJson ? json : data,
+      headers: isJson ? { 'Content-Type': 'application/json', ...headers } : headers,
+      ...rest,
+    })
+    .catch((error: unknown) => {
+      if (!axios.isAxiosError(error)) throw new ApiError('Ocorreu um erro inesperado.', 500)
+      const status = error.response?.status ?? 500
+      if (status === 401) unauthorizedHandler?.()
+      throw new ApiError(extractErrorMessage(error), status)
+    })
+
+  if (response.status === 204) return undefined as T
+
+  const payload = response.data as Record<string, unknown> | null
+  if (payload && typeof payload === 'object' && 'value' in payload) return payload.value as T
+
+  return response.data
+}
