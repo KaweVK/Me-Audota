@@ -29,8 +29,8 @@ export const PetsNAdotados = ({}) => {
         description="Conheça os pets que estão disponíveis para adoção."
         search={search}
         setSearch={setSearch}
-        filteredPets={filteredPets}
-        petsNaoAdotados={petsNaoAdotados}
+        filteredList={filteredPets}
+        fullList={petsNaoAdotados}
         searchPlaceholder="Nome do pet"
       />
 

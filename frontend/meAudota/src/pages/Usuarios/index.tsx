@@ -55,8 +55,8 @@ export const Usuarios = () => {
         description="Conheça os usuários cadastrados!"
         search={search}
         setSearch={setSearch}
-        filteredPets={filteredUsers}
-        petsNaoAdotados={users}
+        filteredList={filteredUsers}
+        fullList={users}
         searchPlaceholder="Nome do usuário"
       />
 

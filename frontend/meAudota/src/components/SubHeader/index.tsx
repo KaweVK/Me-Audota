@@ -1,18 +1,18 @@
 import { Link } from "react-router-dom"
 import type { Pet } from "../../types/pet"
+import type { Usuario } from "../../types/user"
 
 interface SubHeaderProps {
   title: string
   description: string
   search: string
   setSearch: (search: string) => void
-  filteredPets: Pet[]
-  petsNaoAdotados: Pet[]
+  filteredList: Pet[] | Usuario[]
+  fullList: Pet[] | Usuario[]
   searchPlaceholder: string
 }
 
-
-const SubHeader = ({title, description, search, setSearch, filteredPets, petsNaoAdotados, searchPlaceholder}: SubHeaderProps) => {
+const SubHeader = ({title, description, search, setSearch, filteredList, fullList, searchPlaceholder}: SubHeaderProps) => {
     return (
         <header className="rounded-[2rem] border border-[var(--brand-line)] bg-white p-6 shadow-[0_24px_60px_-42px_rgba(34,24,18,0.55)] md:p-7">
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -41,7 +41,7 @@ const SubHeader = ({title, description, search, setSearch, filteredPets, petsNao
                     />
                   </label>
                   <p className="text-sm font-semibold text-[var(--brand-text-soft)]">
-                    {filteredPets.length} de {petsNaoAdotados.length} pets exibidos
+                    {filteredList.length} de {fullList.length} exibidos
                   </p>
                 </div>
               </header>

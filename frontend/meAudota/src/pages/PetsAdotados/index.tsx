@@ -29,8 +29,8 @@ export const PetsAdotados = ({}) => {
               description="Conheça os pets que já foram adotados! Cada história de adoção é uma vitória que inspira esperança e renova nosso compromisso com o bem-estar animal."
               search={search}
               setSearch={setSearch}
-              filteredPets={filteredPets}
-              petsNaoAdotados={petsNaoAdotados}
+              filteredList={filteredPets}
+              fullList={petsNaoAdotados}
               searchPlaceholder="Nome do pet"
             />
 
